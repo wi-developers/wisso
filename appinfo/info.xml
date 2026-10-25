@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+	<id>wisso</id>
+	<name>wi single sign-on</name>
+	<summary>Sign wi users in to this Nextcloud from wi</summary>
+	<description>Implements the three-call wi single sign-on contract (login, update, consume) so that a wi user who clicks the Path card lands signed in here. Not an OpenID Connect or SAML provider.</description>
+	<version>0.1.0</version>
+	<licence>agpl</licence>
+	<author>wi</author>
+	<namespace>Wisso</namespace>
+	<category>security</category>
+	<dependencies>
+		<nextcloud min-version="34"/>
+	</dependencies>
+	<commands>
+		<command>OCA\Wisso\Command\Status</command>
+		<command>OCA\Wisso\Command\Unlink</command>
+		<command>OCA\Wisso\Command\KeyGenerate</command>
+	</commands>
+</info>
