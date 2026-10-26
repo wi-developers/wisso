@@ -95,6 +95,26 @@ class ConsumeTest extends WissoTestCase {
 		$this->assertNotNull($this->whoAmIAfter($client, $url), 'and still works for the real visit');
 	}
 
+	/** Four browsers present the same code at the same moment: exactly one is signed in. */
+	public function testParallelPresentationsOfOneCodeSignInExactlyOne(): void {
+		for ($round = 0; $round < 4; $round++) {
+			$url = $this->loginFor($this->randomEmail('race'));
+			$promises = [];
+			for ($i = 0; $i < 4; $i++) {
+				$promises[] = $this->client(new CookieJar())->getAsync($url);
+			}
+			$signedIn = 0;
+			foreach (\GuzzleHttp\Promise\Utils::settle($promises)->wait() as $res) {
+				$this->assertSame('fulfilled', $res['state']);
+				if ($res['value']->getHeaderLine('Location') !== self::LOGIN) {
+					$signedIn++;
+				}
+			}
+			$this->assertSame(1, $signedIn, "round $round");
+			$this->clearRateLimits();
+		}
+	}
+
 	public function testClaimCodeIsNotASignInCodeAndTheReverse(): void {
 		$holder = $this->randomEmail('holder');
 		$this->mkUser('t_holder', $holder);

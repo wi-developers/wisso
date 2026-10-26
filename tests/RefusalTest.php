@@ -66,6 +66,22 @@ class RefusalTest extends WissoTestCase {
 		}
 	}
 
+	/** A failure while deciding means refuse (RW-01 style fail closed), never let through. */
+	public function testPolicyErrorFailsClosed(): void {
+		$email = $this->randomEmail('pe');
+		$u = $this->mkUser('t_pe', $email);
+		$this->linkNow($u, $email);
+		$prefix = (string)$this->config->getSystemValue('dbtableprefix', 'oc_');
+		$db = $this->db;
+		$db->executeStatement("RENAME TABLE `{$prefix}authorized_groups` TO `{$prefix}authorized_groups_x`");
+		$this->onTearDown(fn () => $db->executeStatement("RENAME TABLE `{$prefix}authorized_groups_x` TO `{$prefix}authorized_groups`"));
+		// u has no group, so the delegated lookup returns early; give the account a group so the query runs
+		$g = $this->groups->createGroup('t_pe_g');
+		$this->madeGroups[] = 't_pe_g';
+		$g->addUser($u);
+		$this->assertRefused($email);
+	}
+
 	public function testPrivilegedAccountIsRefusedOnUpdateToo(): void {
 		$email = $this->randomEmail('up');
 		$u = $this->mkUser('t_up', $email);

@@ -53,6 +53,18 @@ class ApiKeyTest extends WissoTestCase {
 		$this->assertSame(0, $this->countRows('wisso_links'));
 	}
 
+	/** A non-Bearer scheme carrying the right key is not accepted (core answers Basic itself, so use another scheme). */
+	public function testOtherAuthorizationSchemesAreRefusedEvenWithTheRightKey(): void {
+		foreach (['Token ', 'Bearer-x ', 'bearer '] as $scheme) {
+			$r = $this->client()->post(self::ADMIN_API . 'login', [
+				'form_params' => $this->form(),
+				'headers' => ['Authorization' => $scheme . $this->key],
+			]);
+			$this->assertErrorShape($r, 401);
+		}
+		$this->assertSame(0, $this->countRows('wisso_links'));
+	}
+
 	public function testUnsetKeyFailsClosedEvenForAnyToken(): void {
 		$this->withKeyHash(null);
 		$this->assertErrorShape($this->apiPost('login', $this->form(), $this->key), 401);

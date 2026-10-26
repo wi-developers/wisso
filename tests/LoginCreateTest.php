@@ -49,6 +49,21 @@ class LoginCreateTest extends WissoTestCase {
 		}
 	}
 
+	/** The generated password is built from fresh random parts every time (salted hashes always differ, so look at the source). */
+	public function testGeneratedPasswordIsRandomAndLongEnough(): void {
+		$svc = \OCP\Server::get(\OCA\Wisso\Service\AccountService::class);
+		$m = new \ReflectionMethod($svc, 'randomPassword');
+		$seen = [];
+		for ($i = 0; $i < 5; $i++) {
+			$p = $m->invoke($svc);
+			$this->assertGreaterThanOrEqual(48, strlen($p));
+			$this->assertNotContains($p, $seen);
+			$seen[] = $p;
+		}
+		$this->assertGreaterThan(40, strlen(count_chars(implode('', $seen), 3)) + 40, 'variety');
+		$this->assertGreaterThanOrEqual(30, strlen(count_chars(implode('', $seen), 3)), 'many distinct characters across the samples');
+	}
+
 	public function testUrlComesFromOverwriteCliUrlNotFromTheHostHeader(): void {
 		$r = $this->apiPost('login', ['email' => $this->randomEmail()], '', ['Host' => 'localhost', 'X-Forwarded-Host' => 'evil.example']);
 		$this->assertSame(200, $r->getStatusCode());
