@@ -26,10 +26,27 @@ class LoginCreateTest extends WissoTestCase {
 		$this->assertSame([], $this->groups->getUserGroupIds($user), 'no group');
 		$this->assertFalse($this->groups->isAdmin($user->getUID()));
 		$this->assertTrue($user->isEnabled());
-		$this->assertSame('1 GB', $user->getQuota());
+		$this->assertSame('', $this->config->getUserValue($user->getUID(), 'files', 'quota', ''), 'no per-user quota is set by wisso');
 		$this->assertSame('Database', $user->getBackendClassName());
 		$this->assertSame(\OCP\Accounts\IAccountManager::VERIFIED, $this->accountVerified($user), 'e-mail marked verified');
 		$this->assertStringNotContainsString($email, $user->getUID());
+	}
+
+	/** Nobody knows the password of a created account, and no two accounts share one (BitBox RW-03). */
+	public function testCreatedPasswordsAreRandomPerAccount(): void {
+		$hashes = [];
+		foreach ([1, 2] as $_) {
+			$email = $this->randomEmail();
+			$this->loginFor($email);
+			$qb = $this->db->getQueryBuilder();
+			$qb->select('password')->from('users')->where($qb->expr()->eq('uid', $qb->createNamedParameter($this->linkedUid($email))));
+			$hashes[] = (string)$qb->executeQuery()->fetchOne();
+		}
+		$this->assertNotSame($hashes[0], $hashes[1]);
+		$this->assertNotSame('', $hashes[0]);
+		foreach (['', 'password', 'wi'] as $guess) {
+			$this->assertFalse($this->um->checkPassword($this->linkedUid($email), $guess));
+		}
 	}
 
 	public function testUrlComesFromOverwriteCliUrlNotFromTheHostHeader(): void {
@@ -112,15 +129,15 @@ class LoginCreateTest extends WissoTestCase {
 		$this->assertSame('ar', $this->config->getSystemValue('default_locale'));
 	}
 
-	public function testQuotaFollowsTheAppSettingAndFallsBackWhenInvalid(): void {
-		$this->withAppConfig('wisso', 'default_quota', '500 MB');
-		$a = $this->randomEmail();
-		$this->loginFor($a);
-		$this->assertSame('500 MB', $this->created($a)->getQuota());
-		$this->withAppConfig('wisso', 'default_quota', 'lots; DROP');
-		$b = $this->randomEmail();
-		$this->loginFor($b);
-		$this->assertSame('1 GB', $this->created($b)->getQuota());
+	/** Owner decision D-NC-003: wisso sets no quota; a created user gets the instance default for new users. */
+	public function testCreatedUserGetsTheInstanceDefaultQuota(): void {
+		$this->withAppConfig('files', 'default_quota', '250 MB');
+		$email = $this->randomEmail();
+		$this->loginFor($email);
+		$user = $this->created($email);
+		$this->assertSame('250 MB', $user->getQuota(), 'resolves to the instance default');
+		$this->assertSame('', $this->config->getUserValue($user->getUID(), 'files', 'quota', ''));
+		$this->assertStringNotContainsString('1 GB', $user->getQuota());
 	}
 
 	public function testSquattedUidDoesNotBlockTheNewAccount(): void {

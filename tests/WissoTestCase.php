@@ -53,6 +53,11 @@ abstract class WissoTestCase extends TestCase {
 		$this->assertProductionShape();
 		$this->resetState();
 		if (self::$suiteKey === null) {
+			// a fresh log for this run, so the hygiene test judges only what this run wrote
+			$log = (string)$this->config->getSystemValue('datadirectory') . '/nextcloud.log';
+			if (is_file($log)) {
+				file_put_contents($log, '');
+			}
 			[self::$suiteKey, self::$suiteHash] = KeyChecker::generate();
 			self::$secrets[] = self::$suiteKey;
 			(new KeyChecker($this->appConfig))->setHash(self::$suiteHash);
@@ -310,6 +315,12 @@ abstract class WissoTestCase extends TestCase {
 			->andWhere($qb->expr()->eq('configkey', $qb->createNamedParameter('email')));
 		$v = $qb->executeQuery()->fetchOne();
 		return $v === false ? null : (string)$v;
+	}
+
+	/** The stored key hash as it is now: this process caches app config and an occ child changes it, so reload first. */
+	protected function storedKeyHash(): ?string {
+		$this->appConfig->clearCache(true);
+		return $this->appConfig->hasKey('wisso', 'key_sha256') ? $this->appConfig->getValueString('wisso', 'key_sha256') : null;
 	}
 
 	protected function nextcloudLog(): string {

@@ -16,8 +16,6 @@ use OCP\Security\ISecureRandom;
  * used to notice an existing account, never to sign anyone in.
  */
 class AccountService {
-	public const DEFAULT_QUOTA = '1 GB';
-
 	public function __construct(
 		private IUserManager $users,
 		private IAppConfig $appConfig,
@@ -179,7 +177,7 @@ class AccountService {
 		$user->setSystemEMailAddress($email);
 		$this->markEmailVerified($user);
 		$user->setDisplayName(Input::displayName($name, $email));
-		$user->setQuota($this->quota());
+		// no quota of its own: the instance default for new users applies, as for any other new account
 		return $user;
 	}
 
@@ -187,11 +185,6 @@ class AccountService {
 		$account = $this->accounts->getAccount($user);
 		$account->getProperty(IAccountManager::PROPERTY_EMAIL)->setLocallyVerified(IAccountManager::VERIFIED);
 		$this->accounts->updateAccount($account);
-	}
-
-	private function quota(): string {
-		$q = trim($this->appConfig->getValueString('wisso', 'default_quota', self::DEFAULT_QUOTA));
-		return preg_match('/^(none|default|\d+(\.\d+)? ?(B|KB|MB|GB|TB))$/Di', $q) === 1 ? $q : self::DEFAULT_QUOTA;
 	}
 
 	/** Nobody knows this password; it only has to satisfy the password policy (length and every character class). */

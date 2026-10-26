@@ -40,7 +40,8 @@ class Status extends Command {
 		$output->writeln('overwrite.cli.url set: ' . ($this->config->getSystemValueString('overwrite.cli.url', '') !== '' ? 'yes' : 'no'));
 		$output->writeln('registration admin_approval_required: ' . ($this->flag('admin_approval_required') ? 'yes' : 'no'));
 		$output->writeln('registration allowed_domains set: ' . ($this->appConfig->getValueString('registration', 'allowed_domains', '') !== '' ? 'yes' : 'no'));
-		$output->writeln('default quota: ' . $this->appConfig->getValueString('wisso', 'default_quota', '1 GB'));
+		$output->writeln('users may edit their own profile e-mail: ' . ($this->config->getSystemValueBool('allow_user_to_change_email', $this->config->getSystemValueBool('allow_user_to_change_display_name', true)) ? 'yes (squat lever open)' : 'no'));
+		$output->writeln('instance default quota for new users: ' . $this->appConfig->getValueString('files', 'default_quota', 'none'));
 		if ($input->getOption('links')) {
 			foreach ($this->links->all() as $row) {
 				$output->writeln(SsoLog::ref($row['uid']) . ' ' . $row['uid'] . ' ' . gmdate('Y-m-d\TH:i:s\Z', $row['linked_at']));

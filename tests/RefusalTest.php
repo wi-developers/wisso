@@ -129,6 +129,26 @@ class RefusalTest extends WissoTestCase {
 		$this->assertSame(0, $this->countRows('wisso_links'));
 	}
 
+	/** The mitigation core offers: allow_user_to_change_email=false closes the self-edit paths (owner point D-NC-003 item 3). */
+	public function testSelfServiceEmailEditIsBlockedByTheCoreSettingAndAdditionalMailIsNotMatched(): void {
+		$this->config->setSystemValue('allow_user_to_change_email', false);
+		$this->onTearDown(fn () => $this->config->deleteSystemValue('allow_user_to_change_email'));
+		$this->mkUser('t_noedit', 'squat@wi.example');
+		$client = $this->webLogin('t_noedit');
+		$put = fn (string $key, string $value) => $client->put(self::BASE . '/ocs/v2.php/cloud/users/t_noedit?format=json', [
+			'headers' => ['OCS-APIRequest' => 'true'],
+			'form_params' => ['key' => $key, 'value' => $value],
+		]);
+		$victim = $this->randomEmail('victim');
+		$this->assertSame(113, json_decode((string)$put('email', $victim)->getBody(), true)['ocs']['meta']['statuscode']);
+		$this->assertSame('squat@wi.example', $this->profileEmail('t_noedit'));
+		// an additional address is accepted by core but is not the matching field, so it cannot squat
+		$extra = $this->randomEmail('extra');
+		$put('additional_mail', $extra);
+		$this->assertStringContainsString('/sso/consume?', $this->loginFor($extra), 'a fresh account, not t_noedit');
+		$this->assertNotSame('t_noedit', $this->linkedUid($extra));
+	}
+
 	public function testSquatterNextToAnExistingVictimAccountBlocksOnlyTheVictim(): void {
 		$victim = $this->randomEmail('victim');
 		$this->mkUser('t_victim', $victim);

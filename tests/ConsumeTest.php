@@ -144,6 +144,22 @@ class ConsumeTest extends WissoTestCase {
 	public function testStateChangesBetweenLoginAndConsumeAreCaught(): void {
 		$cases = [
 			'became admin' => fn ($uid) => $this->groups->get('admin')->addUser($this->um->get($uid)),
+			'became delegated admin' => function ($uid): void {
+				$g = $this->groups->createGroup('t_deleg_c');
+				$this->madeGroups[] = 't_deleg_c';
+				$g->addUser($this->um->get($uid));
+				$mapper = Server::get(\OC\Settings\AuthorizedGroupMapper::class);
+				$row = new \OC\Settings\AuthorizedGroup();
+				$row->setGroupId('t_deleg_c');
+				$row->setClass('OCA\\Settings\\Settings\\Admin\\Sharing');
+				$mapper->insert($row);
+				$this->onTearDown(fn () => $mapper->removeGroup('t_deleg_c'));
+			},
+			'became sub admin' => function ($uid): void {
+				$g = $this->groups->createGroup('t_sub_c');
+				$this->madeGroups[] = 't_sub_c';
+				Server::get(\OCP\Group\ISubAdmin::class)->createSubAdmin($this->um->get($uid), $g);
+			},
 			'disabled' => fn ($uid) => $this->um->get($uid)->setEnabled(false),
 			'enrolled 2FA' => fn ($uid) => $this->enrolTwoFactor($this->um->get($uid)),
 			'link removed' => fn ($uid) => $this->db->getQueryBuilder()->delete('wisso_links')->executeStatement(),

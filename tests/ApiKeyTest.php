@@ -96,6 +96,10 @@ class ApiKeyTest extends WissoTestCase {
 	}
 
 	public function testBadKeyLogLinesAreCapped(): void {
+		// the cap is per clock minute: start the burst early enough in a minute to stay inside one
+		if ((int)date('s') > 25) {
+			sleep(61 - (int)date('s'));
+		}
 		$count = fn () => substr_count($this->nextcloudLog(), 'event=login_denied reason=bad_key');
 		$before = $count();
 		for ($i = 0; $i < 30; $i++) {

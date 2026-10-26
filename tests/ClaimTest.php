@@ -201,6 +201,15 @@ class ClaimTest extends WissoTestCase {
 			'e-mail edited away' => fn () => $this->um->get('t_claim')->setSystemEMailAddress('else@wi.example'),
 			'became admin' => fn () => $this->groups->get('admin')->addUser($this->um->get('t_claim')),
 			'2FA enrolled' => fn () => $this->enrolTwoFactor($this->um->get('t_claim')),
+			'disabled' => fn () => $this->um->get('t_claim')->setEnabled(false),
+			'linked to another wi e-mail' => function (): void {
+				$qb = $this->db->getQueryBuilder();
+				$qb->insert('wisso_links')->values([
+					'uid' => $qb->createNamedParameter('t_claim'),
+					'wi_email_sha256' => $qb->createNamedParameter(hash('sha256', 'other-wi@wi.example')),
+					'linked_at' => $qb->createNamedParameter(time()),
+				])->executeStatement();
+			},
 		];
 		foreach ($changes as $label => $change) {
 			$this->holder();
@@ -210,7 +219,7 @@ class ClaimTest extends WissoTestCase {
 			$change();
 			$r = $this->post($client, $f);
 			$this->assertNotContains($r->getStatusCode(), [302, 303], $label);
-			$this->assertNothingLinked();
+			$this->assertSame($label === 'linked to another wi e-mail' ? 1 : 0, $this->countRows('wisso_links'), $label . ': no link was added');
 			$this->tearDown();
 			$this->setUp();
 		}
