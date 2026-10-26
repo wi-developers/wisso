@@ -17,8 +17,9 @@ fi
 version="$(git show "$full:appinfo/info.xml" | sed -n 's:.*<version>\(.*\)</version>.*:\1:p' | head -n 1)"
 mkdir -p "$out"
 name="wisso-$version-$short.tar.gz"
-# --prefix makes the archive extract to wisso/ ; gzip -n leaves out the file name and time
-git archive --format=tar --prefix=wisso/ "$full" appinfo lib | gzip -n -9 > "$out/$name"
+# --prefix makes the archive extract to wisso/ ; modes 644/755 (umask 0022) and a fixed mtime make the bytes depend on the
+# content only, so a later commit that changes only tests or tools leaves the sha256 as it was; gzip -n leaves out name and time
+git -c tar.umask=0022 archive --format=tar --mtime=2026-01-01T00:00:00Z --prefix=wisso/ "$full" appinfo lib | gzip -n -9 > "$out/$name"
 echo "commit   $full"
 echo "package  $out/$name"
 echo "bytes    $(wc -c < "$out/$name" | tr -d ' ')"
