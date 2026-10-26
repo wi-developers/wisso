@@ -32,7 +32,9 @@ class RedirectValidator {
 		}
 		// decode once, then judge the decoded text
 		$decoded = rawurldecode($input);
-		if (preg_match('/[\x00-\x1F\x7F%\\\\.]/', $decoded) === 1) {
+		// the one dot allowed is the front controller's own: it is in our own output, which consume judges again
+		$rest = str_starts_with($decoded, '/index.php/') ? substr($decoded, strlen('/index.php')) : $decoded;
+		if (preg_match('/[\x00-\x1F\x7F%\\\\.]/', $rest) === 1) {
 			return $this->defaultPath();
 		}
 		if (preg_match(self::PATTERN, $decoded, $m) !== 1) {
