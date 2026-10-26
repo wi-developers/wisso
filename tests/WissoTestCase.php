@@ -215,6 +215,7 @@ abstract class WissoTestCase extends TestCase {
 		$key = $key === '' ? $this->key : $key;
 		if ($key !== null) {
 			$headers['Authorization'] = 'Bearer ' . $key;
+			self::$secrets[] = $key; // a wrong key is a secret too: nothing the caller sends may be echoed into the log
 		}
 		return $this->client()->post(self::ADMIN_API . $path, ['form_params' => $form, 'headers' => $headers]);
 	}

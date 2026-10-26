@@ -14,6 +14,16 @@ const only = process.argv.slice(2);
 const results = existsSync(join(root, 'tools', 'mutation-results.json'))
 	? JSON.parse(readFileSync(join(root, 'tools', 'mutation-results.json'), 'utf8')) : {};
 
+// Nextcloud caches its route table in APCu: a mutant of routes.php only takes effect after Apache is restarted.
+function restartApache() {
+	// apachectl restart signals the main process (SIGHUP) and the exec can report status 129 although the restart worked
+	try {
+		execFileSync('docker', ['compose', 'exec', '-T', 'app', 'apachectl', 'restart'], { cwd: join(root, '..', 'rig'), stdio: 'ignore', env: { ...process.env, MSYS_NO_PATHCONV: '1' } });
+	} catch (e) { /* checked below */ }
+	execFileSync('sleep', ['6']);
+	execFileSync('docker', ['compose', 'exec', '-T', 'app', 'curl', '-sf', '-o', '/dev/null', 'http://localhost/status.php'], { cwd: join(root, '..', 'rig'), env: { ...process.env, MSYS_NO_PATHCONV: '1' } });
+}
+
 function run(filter, outFile) {
 	const sh = join(root, 'tools', 'run-tests.sh');
 	try {
@@ -41,9 +51,11 @@ for (const m of mutants) {
 	writeFileSync(file, mutated);
 	let output = '';
 	try {
-		output = run(m.tests, '/tmp/wisso-mutant.txt');
+		if (m.restart) restartApache();
+		output = run(m.also ? m.also + '|' + m.tests : m.tests, '/tmp/wisso-mutant.txt');
 	} finally {
 		writeFileSync(file, original);
+		if (m.restart) restartApache();
 	}
 	const ran = /Tests: (\d+)/.test(output) || /OK \((\d+) test/.test(output);
 	const failed = [...output.matchAll(/^\d+\) (\w+::\w+)/gm)].map((x) => x[1]);

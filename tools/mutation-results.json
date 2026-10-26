@@ -1,0 +1,804 @@
+{
+ "M01": {
+  "id": "M01",
+  "rule": "R-A key compared with hash_equals",
+  "file": "lib/Service/KeyChecker.php",
+  "tests": "testWrongKeyIs401Json|testMalformedKeysAre401",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testWrongKeyIs401Json"
+  ]
+ },
+ "M02": {
+  "id": "M02",
+  "rule": "R-A setHash refuses a non-hash (raw key never stored)",
+  "file": "lib/Service/KeyChecker.php",
+  "tests": "testKeyCheckerRefusesToStoreARawKey",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testKeyCheckerRefusesToStoreARawKey"
+  ]
+ },
+ "M03": {
+  "id": "M03",
+  "rule": "R-A only the Bearer scheme is accepted",
+  "file": "lib/Service/KeyChecker.php",
+  "tests": "testOtherAuthorizationSchemesAreRefusedEvenWithTheRightKey",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testOtherAuthorizationSchemesAreRefusedEvenWithTheRightKey"
+  ]
+ },
+ "M04": {
+  "id": "M04",
+  "rule": "R-A a bad key fills no rate bucket (cannot lock the real key out)",
+  "file": "lib/Controller/ApiController.php",
+  "tests": "testBadKeysNeverFillTheBucket",
+  "status": "CAUGHT",
+  "failed": [
+   "RateLimitTest::testBadKeysNeverFillTheBucket"
+  ]
+ },
+ "M05": {
+  "id": "M05",
+  "rule": "R-B per-email limit 10/min on login",
+  "file": "lib/Service/Throttle.php",
+  "tests": "testSameEmailIsLimitedToTenPerMinute",
+  "status": "CAUGHT",
+  "failed": [
+   "RateLimitTest::testSameEmailIsLimitedToTenPerMinute"
+  ]
+ },
+ "M06": {
+  "id": "M06",
+  "rule": "R-B global limit 120/min",
+  "file": "lib/Service/Throttle.php",
+  "tests": "testGlobalBucketIsLimitedToOneHundredTwentyPerMinute",
+  "status": "CAUGHT",
+  "failed": [
+   "RateLimitTest::testGlobalBucketIsLimitedToOneHundredTwentyPerMinute"
+  ]
+ },
+ "M07": {
+  "id": "M07",
+  "rule": "R-B throttle called on login",
+  "file": "lib/Controller/ApiController.php",
+  "tests": "testSameEmailIsLimitedToTenPerMinute",
+  "status": "CAUGHT",
+  "failed": [
+   "RateLimitTest::testSameEmailIsLimitedToTenPerMinute"
+  ]
+ },
+ "M08": {
+  "id": "M08",
+  "rule": "R-C consume: 30 per minute per client address",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testConsumeIsLimitedPerClientAddress",
+  "status": "CAUGHT",
+  "failed": [
+   "RateLimitTest::testConsumeIsLimitedPerClientAddress"
+  ]
+ },
+ "M09": {
+  "id": "M09",
+  "rule": "R-C claim confirm: 5 per minute per user",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testClaimConfirmIsLimitedPerUser",
+  "status": "CAUGHT",
+  "failed": [
+   "RateLimitTest::testClaimConfirmIsLimitedPerUser"
+  ]
+ },
+ "M10": {
+  "id": "M10",
+  "rule": "R-D every failure on the admin-api prefix is JSON (internal error)",
+  "file": "lib/Controller/ApiController.php",
+  "tests": "testInternalFailureIsGenericJsonEvenWithDebug",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testInternalFailureIsGenericJsonEvenWithDebug"
+  ]
+ },
+ "M11": {
+  "id": "M11",
+  "rule": "R-D the 500 body never carries an exception message",
+  "file": "lib/Controller/ApiController.php",
+  "tests": "testInternalFailureIsGenericJsonEvenWithDebug",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testInternalFailureIsGenericJsonEvenWithDebug"
+  ]
+ },
+ "M12": {
+  "id": "M12",
+  "rule": "R-D unknown GET under admin-api is JSON",
+  "file": "appinfo/routes.php",
+  "tests": "testUnknownPathsAre404Json|testGetOnLoginIs405Json",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testGetOnLoginIs405Json",
+   "ApiKeyTest::testUnknownPathsAre404Json"
+  ]
+ },
+ "M13": {
+  "id": "M13",
+  "rule": "R-D unknown DELETE under admin-api is JSON",
+  "file": "appinfo/routes.php",
+  "tests": "testUnknownPathsAre404Json",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testUnknownPathsAre404Json"
+  ]
+ },
+ "M14": {
+  "id": "M14",
+  "rule": "R-E the URL is built from overwrite.cli.url, never the Host",
+  "file": "lib/Service/Urls.php",
+  "tests": "testUrlComesFromOverwriteCliUrlNotFromTheHostHeader",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testUrlComesFromOverwriteCliUrlNotFromTheHostHeader"
+  ]
+ },
+ "M15": {
+  "id": "M15",
+  "rule": "R-E the e-mail is canonicalised (lower case) before hashing",
+  "file": "lib/Service/Input.php",
+  "tests": "testNewWiUserGetsAnAccountFromTheWiEmail",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testNewWiUserGetsAnAccountFromTheWiEmail"
+  ]
+ },
+ "M16": {
+  "id": "M16",
+  "rule": "R-E name: control and bidi characters stripped",
+  "file": "lib/Service/Input.php",
+  "tests": "testNameRules|testNameIsUpdatedCleanedAndCut",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testNameRules",
+   "UpdateTest::testNameIsUpdatedCleanedAndCut"
+  ]
+ },
+ "M17": {
+  "id": "M17",
+  "rule": "R-E display name cut to the 64-character column",
+  "file": "lib/Service/Input.php",
+  "tests": "testNameRules|testNameIsUpdatedCleanedAndCut",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testNameRules",
+   "UpdateTest::testNameIsUpdatedCleanedAndCut"
+  ]
+ },
+ "M18": {
+  "id": "M18",
+  "rule": "R-F admin refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin",
+  "status": "SURVIVED",
+  "failed": []
+ },
+ "M19": {
+  "id": "M19",
+  "rule": "R-F sub-admin refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink",
+   "RefusalTest::testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+  ]
+ },
+ "M20": {
+  "id": "M20",
+  "rule": "R-F delegated admin refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink",
+   "RefusalTest::testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+  ]
+ },
+ "M21": {
+  "id": "M21",
+  "rule": "R-F 2FA-enrolled refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink",
+   "RefusalTest::testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+  ]
+ },
+ "M22": {
+  "id": "M22",
+  "rule": "R-F disabled refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink",
+   "RefusalTest::testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+  ]
+ },
+ "M23": {
+  "id": "M23",
+  "rule": "RW-01 a failure while deciding refuses (fail closed)",
+  "file": "lib/Service/AccountPolicy.php",
+  "tests": "testPolicyErrorFailsClosed",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPolicyErrorFailsClosed"
+  ]
+ },
+ "M24": {
+  "id": "M24",
+  "rule": "R-F linked account is re-checked at login",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+  ]
+ },
+ "M25": {
+  "id": "M25",
+  "rule": "R-F existing unlinked account is checked before a claim is offered",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink"
+  ]
+ },
+ "M26": {
+  "id": "M26",
+  "rule": "R-F update refuses ineligible accounts",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testPrivilegedAccountIsRefusedOnUpdateToo|testDisabledAccountIsRefusedOnUpdate",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testPrivilegedAccountIsRefusedOnUpdateToo",
+   "UpdateTest::testDisabledAccountIsRefusedOnUpdate"
+  ]
+ },
+ "M27": {
+  "id": "M27",
+  "rule": "R-G two accounts with one e-mail are ambiguous",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testTwoAccountsWithTheSameEmailAreAmbiguous",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testTwoAccountsWithTheSameEmailAreAmbiguous"
+  ]
+ },
+ "M28": {
+  "id": "M28",
+  "rule": "R-G squatter (profile e-mail edited) blocks only the victim",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testLinkedAccountWhoseProfileEmailIsEditedToAVictimBlocksOnlyTheVictim",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testLinkedAccountWhoseProfileEmailIsEditedToAVictimBlocksOnlyTheVictim"
+  ]
+ },
+ "M29": {
+  "id": "M29",
+  "rule": "R-G the link table, not the profile e-mail, finds a linked account",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testProfileEmailChangeNeitherGrantsNorRemovesAccess",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testProfileEmailChangeNeitherGrantsNorRemovesAccess"
+  ]
+ },
+ "M30": {
+  "id": "M30",
+  "rule": "R-H Nextcloud registration domain rules apply to new accounts",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testAllowedDomainsListIsHonoured|testBlocklistModeIsHonoured",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testAllowedDomainsListIsHonoured",
+   "LoginCreateTest::testBlocklistModeIsHonoured"
+  ]
+ },
+ "M31": {
+  "id": "M31",
+  "rule": "R-H admin approval blocks creation",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testAdminApprovalRequiredRefusesNewAccounts",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testAdminApprovalRequiredRefusesNewAccounts"
+  ]
+ },
+ "M32": {
+  "id": "M32",
+  "rule": "R-H blocklist mode inverts the domain list",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testBlocklistModeIsHonoured",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testBlocklistModeIsHonoured"
+  ]
+ },
+ "M33": {
+  "id": "M33",
+  "rule": "R-I a squatted predictable uid does not block creation",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testSquattedUidDoesNotBlockTheNewAccount",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testSquattedUidDoesNotBlockTheNewAccount"
+  ]
+ },
+ "M34": {
+  "id": "M34",
+  "rule": "R-I created e-mail is marked verified",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testNewWiUserGetsAnAccountFromTheWiEmail",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testNewWiUserGetsAnAccountFromTheWiEmail"
+  ]
+ },
+ "M35": {
+  "id": "M35",
+  "rule": "RW-03 the generated password is random per account",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testGeneratedPasswordIsRandomAndLongEnough",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testGeneratedPasswordIsRandomAndLongEnough"
+  ]
+ },
+ "M36": {
+  "id": "M36",
+  "rule": "D-NC-003 wisso sets no quota of its own",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testCreatedUserGetsTheInstanceDefaultQuota",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testCreatedUserGetsTheInstanceDefaultQuota"
+  ]
+ },
+ "M37": {
+  "id": "M37",
+  "rule": "R-K update never creates and finds only linked accounts",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testUnlinkedAccountWithTheSameEmailIsNotUpdated",
+  "status": "CAUGHT",
+  "failed": [
+   "UpdateTest::testUnlinkedAccountWithTheSameEmailIsNotUpdated"
+  ]
+ },
+ "M38": {
+  "id": "M38",
+  "rule": "R-K new_email may not collide with a profile e-mail of another account",
+  "file": "lib/Service/AccountService.php",
+  "tests": "testNewEmailCollisionsAre422AndNothingChanges",
+  "status": "CAUGHT",
+  "failed": [
+   "UpdateTest::testNewEmailCollisionsAre422AndNothingChanges"
+  ]
+ },
+ "M39": {
+  "id": "M39",
+  "rule": "R-L code expires (60 s)",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testExpiredCodeIsRefused|testExpiredCodeIsAnExpiredLinkPage",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testExpiredCodeIsAnExpiredLinkPage"
+  ]
+ },
+ "M40": {
+  "id": "M40",
+  "rule": "R-L login code lifetime is 60 s",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testCodeIsStoredHashedAndOnePerAccount",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testCodeIsStoredHashedAndOnePerAccount"
+  ]
+ },
+ "M41": {
+  "id": "M41",
+  "rule": "R-L login and claim codes are disjoint types",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testClaimCodeIsNotASignInCodeAndTheReverse",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testClaimCodeIsNotASignInCodeAndTheReverse"
+  ]
+ },
+ "M42": {
+  "id": "M42",
+  "rule": "R-L a new code removes the older one of the account",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testCodeIsStoredHashedAndOnePerAccount",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testCodeIsStoredHashedAndOnePerAccount"
+  ]
+ },
+ "M43": {
+  "id": "M43",
+  "rule": "R-L code stored only as a hash",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testCodeIsStoredHashedAndOnePerAccount",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testCodeIsStoredHashedAndOnePerAccount"
+  ]
+ },
+ "M44": {
+  "id": "M44",
+  "rule": "R-M consume is single use (code deleted)",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testParallelPresentationsOfOneCodeSignInExactlyOne",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testParallelPresentationsOfOneCodeSignInExactlyOne"
+  ]
+ },
+ "M45": {
+  "id": "M45",
+  "rule": "R-M consume actually deletes the code row",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testCodeCannotBeReplayed",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testCodeCannotBeReplayed"
+  ]
+ },
+ "M46": {
+  "id": "M46",
+  "rule": "R-N HEAD never consumes",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testHeadAndPrefetchNeitherReadNorConsume|testHeadAndPrefetchDoNotReadTheClaimCode",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testHeadAndPrefetchDoNotReadTheClaimCode",
+   "ConsumeTest::testHeadAndPrefetchNeitherReadNorConsume"
+  ]
+ },
+ "M47": {
+  "id": "M47",
+  "rule": "R-N prefetch and preview headers never consume",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testHeadAndPrefetchNeitherReadNorConsume|testHeadAndPrefetchDoNotReadTheClaimCode",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testHeadAndPrefetchDoNotReadTheClaimCode",
+   "ConsumeTest::testHeadAndPrefetchNeitherReadNorConsume"
+  ]
+ },
+ "M48": {
+  "id": "M48",
+  "rule": "R-O a different signed-in user is not switched and the code is kept",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testDifferentSignedInUserGetsAPageAndTheCodeSurvives",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testDifferentSignedInUserGetsAPageAndTheCodeSurvives"
+  ]
+ },
+ "M49": {
+  "id": "M49",
+  "rule": "R-P consume re-checks the link row",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testStateChangesBetweenLoginAndConsumeAreCaught",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testStateChangesBetweenLoginAndConsumeAreCaught"
+  ]
+ },
+ "M50": {
+  "id": "M50",
+  "rule": "R-P consume re-checks admin, delegated admin, sub-admin, disabled, 2FA",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testStateChangesBetweenLoginAndConsumeAreCaught",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testStateChangesBetweenLoginAndConsumeAreCaught"
+  ]
+ },
+ "M51": {
+  "id": "M51",
+  "rule": "R-P consume refuses a deleted account",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testDeletedAccountBetweenLoginAndConsumeIsRefused",
+  "status": "SURVIVED",
+  "failed": []
+ },
+ "M52": {
+  "id": "M52",
+  "rule": "R-Q session id regenerated at sign-in",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testHappyPathSignsTheUserInAndRegeneratesTheSession",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testHappyPathSignsTheUserInAndRegeneratesTheSession"
+  ]
+ },
+ "M53": {
+  "id": "M53",
+  "rule": "R-Q a signed-in session is created at consume",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testHappyPathSignsTheUserInAndRegeneratesTheSession",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testHappyPathSignsTheUserInAndRegeneratesTheSession"
+  ]
+ },
+ "M54": {
+  "id": "M54",
+  "rule": "R-R `to` is validated again at consume",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"
+  ]
+ },
+ "M55": {
+  "id": "M55",
+  "rule": "R-R redirect path restricted to apps (login)",
+  "file": "lib/Service/RedirectValidator.php",
+  "tests": "testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+   "ConsumeTest::testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"
+  ]
+ },
+ "M56": {
+  "id": "M56",
+  "rule": "R-R redirect length limit",
+  "file": "lib/Service/RedirectValidator.php",
+  "tests": "testTooLongRedirectFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testTooLongRedirectFallsBack"
+  ]
+ },
+ "M57": {
+  "id": "M57",
+  "rule": "R-R redirect control characters rejected",
+  "file": "lib/Service/RedirectValidator.php",
+  "tests": "testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume",
+  "status": "SURVIVED",
+  "failed": []
+ },
+ "M58": {
+  "id": "M58",
+  "rule": "R-S consume answers no-store",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testHappyPathSignsTheUserInAndRegeneratesTheSession",
+  "status": "SURVIVED",
+  "failed": []
+ },
+ "M59": {
+  "id": "M59",
+  "rule": "R-T claim: wrong signed-in user cannot confirm",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testOtherSignedInUserGetsThe409Page|testPostFromTheWrongSignedInUserLinksNothing",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testOtherSignedInUserGetsThe409Page"
+  ]
+ },
+ "M60": {
+  "id": "M60",
+  "rule": "R-J claim needs a fresh password sign-in",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testSessionWithoutAFreshPasswordSignInMustSignInAgain",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testSessionWithoutAFreshPasswordSignInMustSignInAgain"
+  ]
+ },
+ "M61": {
+  "id": "M61",
+  "rule": "R-T claim re-checks privilege, disabled and 2FA",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testAccountStateChangesBeforeTheConfirmAreCaught",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testAccountStateChangesBeforeTheConfirmAreCaught"
+  ]
+ },
+ "M62": {
+  "id": "M62",
+  "rule": "R-T claim refuses when the profile e-mail changed after the offer",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testAccountStateChangesBeforeTheConfirmAreCaught",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testAccountStateChangesBeforeTheConfirmAreCaught"
+  ]
+ },
+ "M63": {
+  "id": "M63",
+  "rule": "R-T own session-bound form token is checked",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testPostWithoutOwnTokenOrWithAWrongOneIsRefusedAndKeepsTheCode|testSecondTabWithTheOlderFormTokenFails",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testPostWithoutOwnTokenOrWithAWrongOneIsRefusedAndKeepsTheCode",
+   "ClaimTest::testSecondTabWithTheOlderFormTokenFails"
+  ]
+ },
+ "M64": {
+  "id": "M64",
+  "rule": "R-T claim code is consumed together with the link",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testConfirmLinksOnceAndTheNextWiClickSignsInDirectly",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testConfirmLinksOnceAndTheNextWiClickSignsInDirectly"
+  ]
+ },
+ "M65": {
+  "id": "M65",
+  "rule": "R-T the claim page reads only claim-type codes",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders|testClaimCodeIsNotASignInCodeAndTheReverse",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testOwnerSeesTheConfirmPageWithSafeHeaders",
+   "ConsumeTest::testClaimCodeIsNotASignInCodeAndTheReverse"
+  ]
+ },
+ "M66": {
+  "id": "M66",
+  "rule": "R-T claim POST normalises `to`",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testTamperedToIsNormalisedOnPost",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testTamperedToIsNormalisedOnPost"
+  ]
+ },
+ "M67": {
+  "id": "M67",
+  "rule": "R-T claim pages escape every value",
+  "file": "lib/Service/Pages.php",
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testOwnerSeesTheConfirmPageWithSafeHeaders"
+  ]
+ },
+ "M68": {
+  "id": "M68",
+  "rule": "R-T claim pages: form-action self in the CSP",
+  "file": "lib/Service/Pages.php",
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testOwnerSeesTheConfirmPageWithSafeHeaders"
+  ]
+ },
+ "M69": {
+  "id": "M69",
+  "rule": "R-T claim pages carry no-store",
+  "file": "lib/Service/Pages.php",
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders",
+  "status": "SURVIVED",
+  "failed": []
+ },
+ "M70": {
+  "id": "M70",
+  "rule": "R-T every page has Arabic and English text",
+  "file": "lib/Service/Pages.php",
+  "tests": "testEveryPageIsBilingual",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testEveryPageIsBilingual"
+  ]
+ },
+ "M71": {
+  "id": "M71",
+  "rule": "R-U deleting an account removes its link and codes",
+  "file": "lib/Listener/UserDeletedListener.php",
+  "tests": "testDeletingAnAccountRemovesItsLinkAndCodes|testReusedAccountIdDoesNotInheritTheOldLink",
+  "status": "CAUGHT",
+  "failed": [
+   "RefusalTest::testDeletingAnAccountRemovesItsLinkAndCodes",
+   "RefusalTest::testReusedAccountIdDoesNotInheritTheOldLink"
+  ]
+ },
+ "M72": {
+  "id": "M72",
+  "rule": "R-V the log carries no account id, only a reference",
+  "file": "lib/Service/SsoLog.php",
+  "tests": "testWissoMessagesHaveTheFixedShapeAndNoValues",
+  "status": "CAUGHT",
+  "failed": [
+   "ZLogHygieneTest::testWissoMessagesHaveTheFixedShapeAndNoValues"
+  ]
+ },
+ "M73": {
+  "id": "M73",
+  "rule": "R-V the log never carries the key",
+  "file": "lib/Controller/ApiController.php",
+  "tests": "testNoSecretAppearsInAnyWissoLineExceptCodesInTheUrlContext",
+  "status": "CAUGHT",
+  "failed": [
+   "ZLogHygieneTest::testNoSecretAppearsInAnyWissoLineExceptCodesInTheUrlContext"
+  ]
+ },
+ "M74": {
+  "id": "M74",
+  "rule": "R-V bad-key log lines are capped per minute",
+  "file": "lib/Controller/ApiController.php",
+  "tests": "testBadKeyLogLinesAreCapped",
+  "status": "CAUGHT",
+  "failed": [
+   "ApiKeyTest::testBadKeyLogLinesAreCapped"
+  ]
+ },
+ "M75": {
+  "id": "M75",
+  "rule": "R-W occ wisso:status never prints the key hash",
+  "file": "lib/Command/Status.php",
+  "tests": "testStatusIsReadOnlyAndNeverPrintsTheKeyOrItsHash",
+  "status": "CAUGHT",
+  "failed": [
+   "CommandsTest::testStatusIsReadOnlyAndNeverPrintsTheKeyOrItsHash"
+  ]
+ },
+ "M76": {
+  "id": "M76",
+  "rule": "R-W key:generate refuses to replace a key without --rotate",
+  "file": "lib/Command/KeyGenerate.php",
+  "tests": "testKeyGenerateRefusesToReplaceWithoutRotate",
+  "status": "CAUGHT",
+  "failed": [
+   "CommandsTest::testKeyGenerateRefusesToReplaceWithoutRotate"
+  ]
+ },
+ "M77": {
+  "id": "M77",
+  "rule": "R-W key:generate stores only the hash of the printed key",
+  "file": "lib/Command/KeyGenerate.php",
+  "tests": "testKeyGenerateAndRotateStoreOnlyTheHashAndTheOldKeyDies",
+  "status": "CAUGHT",
+  "failed": [
+   "CommandsTest::testKeyGenerateAndRotateStoreOnlyTheHashAndTheOldKeyDies"
+  ]
+ },
+ "M78": {
+  "id": "M78",
+  "rule": "R-W unlink removes the link but keeps the account",
+  "file": "lib/Command/Unlink.php",
+  "tests": "testUnlinkRemovesTheLinkKeepsTheAccountAndTheNextClickIsAClaim",
+  "status": "CAUGHT",
+  "failed": [
+   "CommandsTest::testUnlinkRemovesTheLinkKeepsTheAccountAndTheNextClickIsAClaim"
+  ]
+ }
+}

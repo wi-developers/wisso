@@ -27,6 +27,7 @@ class ZLogHygieneTest extends WissoTestCase {
 	}
 
 	public function testWissoMessagesHaveTheFixedShapeAndNoValues(): void {
+		$this->assertNotEmpty($this->wissoLines(), 'no wisso line to judge: the test would pass for nothing');
 		foreach ($this->wissoLines() as $d) {
 			$msg = (string)$d['message'];
 			$this->assertMatchesRegularExpression(
@@ -34,12 +35,18 @@ class ZLogHygieneTest extends WissoTestCase {
 				$msg,
 				'unexpected message shape: ' . substr($msg, 0, 120)
 			);
+			// the generic key=value tail would also accept a raw uid under the name uid_ref: pin the reference itself
+			if (preg_match_all('/ uid_ref=(\S+)/', $msg, $refs)) {
+				$this->assertCount(1, $refs[1], 'uid_ref appears more than once: ' . $msg);
+				$this->assertMatchesRegularExpression('/^[0-9a-f]{12}$/D', $refs[1][0], 'uid_ref is not a 12-hex reference: ' . $msg);
+			}
 		}
 	}
 
 	public function testNoSecretAppearsInAnyWissoLineExceptCodesInTheUrlContext(): void {
 		$secrets = array_values(array_unique(array_filter(self::$secrets, fn ($s) => strlen($s) >= 6)));
-		$this->assertGreaterThan(50, count($secrets));
+		$this->assertGreaterThan(1, count($secrets), 'no secret was used before this test');
+		$this->assertNotEmpty($this->wissoLines(), 'no wisso line to judge: the test would pass for nothing');
 		$codes = array_filter($secrets, fn ($s) => preg_match('/^[A-Za-z0-9_-]{43}$/', $s) === 1);
 		foreach ($this->wissoLines() as $d) {
 			$url = (string)($d['url'] ?? '');

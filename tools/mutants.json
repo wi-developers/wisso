@@ -1,80 +1,958 @@
 [
- {"id":"M01","rule":"R-A key compared with hash_equals","file":"lib/Service/KeyChecker.php","edits":[["return hash_equals($stored, hash('sha256', $token));","return true;"]],"tests":"testWrongKeyIs401Json|testMalformedKeysAre401"},
- {"id":"M02","rule":"R-A setHash refuses a non-hash (raw key never stored)","file":"lib/Service/KeyChecker.php","edits":[["if (!self::isHashShape($hash)) {","if (false) {"]],"tests":"testKeyCheckerRefusesToStoreARawKey"},
- {"id":"M03","rule":"R-A only the Bearer scheme is accepted","file":"lib/Service/KeyChecker.php","edits":[["'/^Bearer (\\S+)$/D'","'/^\\S+ (\\S+)$/D'"]],"tests":"testOtherAuthorizationSchemesAreRefusedEvenWithTheRightKey"},
- {"id":"M04","rule":"R-A a bad key fills no rate bucket (cannot lock the real key out)","file":"lib/Controller/ApiController.php","edits":[["$this->badKeyLog('bad_key');\\n\\t\\t\\tthrow new SsoRefusal('bad_key', 401);","$this->throttle->apiCall(hash('sha256', strtolower((string)$this->request->getParam('email'))));\\n\\t\\t\\tthrow new SsoRefusal('bad_key', 401);"]],"tests":"testBadKeysNeverFillTheBucket"},
- {"id":"M05","rule":"R-B per-email limit 10/min on login","file":"lib/Service/Throttle.php","edits":[["'wisso_email_' . $emailHash, 10, 60","'wisso_email_' . $emailHash, 10000, 60"]],"tests":"testSameEmailIsLimitedToTenPerMinute"},
- {"id":"M06","rule":"R-B global limit 120/min","file":"lib/Service/Throttle.php","edits":[["'wisso_global', 120, 60","'wisso_global', 120000, 60"]],"tests":"testGlobalBucketIsLimitedToOneHundredTwentyPerMinute"},
- {"id":"M07","rule":"R-B throttle called on login","file":"lib/Controller/ApiController.php","edits":[["$this->throttle->apiCall(Input::emailHash($email));\\n\\t\\t\\t$to = ","$to = "]],"tests":"testSameEmailIsLimitedToTenPerMinute"},
- {"id":"M08","rule":"R-C consume: 30 per minute per client address","file":"lib/Controller/SsoController.php","edits":[["'wisso_consume', 30,","'wisso_consume', 30000,"]],"tests":"testConsumeIsLimitedPerClientAddress"},
- {"id":"M09","rule":"R-C claim confirm: 5 per minute per user","file":"lib/Controller/SsoController.php","edits":[["'wisso_claim_user', 5,","'wisso_claim_user', 5000,"]],"tests":"testClaimConfirmIsLimitedPerUser"},
- {"id":"M10","rule":"R-D every failure on the admin-api prefix is JSON (internal error)","file":"lib/Controller/ApiController.php","edits":[["} catch (SsoRefusal $r) {\\n\\t\\t\\treturn $this->refuse($r, 'login_denied');\\n\\t\\t} catch (\\Throwable $e) {\\n\\t\\t\\treturn $this->failed($e);","} catch (SsoRefusal $r) {\\n\\t\\t\\treturn $this->refuse($r, 'login_denied');\\n\\t\\t} catch (\\Throwable $e) {\\n\\t\\t\\tthrow $e;"]],"tests":"testInternalFailureIsGenericJsonEvenWithDebug"},
- {"id":"M11","rule":"R-D the 500 body never carries an exception message","file":"lib/Controller/ApiController.php","edits":[["return $this->json($this->errorBody(500), 500);\\n\\t}\\n\\n\\tprivate function errorBody","return $this->json(['errors' => [['title' => $e->getMessage()]]], 500);\\n\\t}\\n\\n\\tprivate function errorBody"]],"tests":"testInternalFailureIsGenericJsonEvenWithDebug"},
- {"id":"M12","rule":"R-D unknown GET under admin-api is JSON","file":"appinfo/routes.php","edits":[["['name' => 'api#fallbackGet', 'url' => '/admin-api/{path}', 'verb' => 'GET', 'requirements' => ['path' => '.+']],\\n",""]],"tests":"testUnknownPathsAre404Json|testGetOnLoginIs405Json"},
- {"id":"M13","rule":"R-D unknown DELETE under admin-api is JSON","file":"appinfo/routes.php","edits":[["['name' => 'api#fallbackDelete', 'url' => '/admin-api/{path}', 'verb' => 'DELETE', 'requirements' => ['path' => '.+']],\\n",""]],"tests":"testUnknownPathsAre404Json"},
- {"id":"M14","rule":"R-E the URL is built from overwrite.cli.url, never the Host","file":"lib/Service/Urls.php","edits":[["return $this->base() . '/index.php/apps/wisso/' . ltrim($path, '/');","return 'https://' . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST']) . '/index.php/apps/wisso/' . ltrim($path, '/');"]],"tests":"testUrlComesFromOverwriteCliUrlNotFromTheHostHeader"},
- {"id":"M15","rule":"R-E the e-mail is canonicalised (lower case) before hashing","file":"lib/Service/Input.php","edits":[["$e = strtolower(trim($value));","$e = trim($value);"]],"tests":"testNewWiUserGetsAnAccountFromTheWiEmail"},
- {"id":"M16","rule":"R-E name: control and bidi characters stripped","file":"lib/Service/Input.php","edits":[["'/[\\p{Cc}\\p{Cf}\\p{Zl}\\p{Zp}]/u'","'/\\x{FFFF}/u'"]],"tests":"testNameRules|testNameIsUpdatedCleanedAndCut"},
- {"id":"M17","rule":"R-E display name cut to the 64-character column","file":"lib/Service/Input.php","edits":[["return mb_substr($name, 0, self::DISPLAY_NAME_MAX);","return $name;"]],"tests":"testNameRules|testNameIsUpdatedCleanedAndCut"},
- {"id":"M18","rule":"R-F admin refused","file":"lib/Service/AccountPolicy.php","edits":[["if ($this->groups->isAdmin($user->getUID())) {","if (false) {"]],"tests":"testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"},
- {"id":"M19","rule":"R-F sub-admin refused","file":"lib/Service/AccountPolicy.php","edits":[["if ($this->subAdmins->isSubAdmin($user)) {","if (false) {"]],"tests":"testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"},
- {"id":"M20","rule":"R-F delegated admin refused","file":"lib/Service/AccountPolicy.php","edits":[["->findAllClassesForUser($user) !== []) {","->findAllClassesForUser($user) === 'never') {"]],"tests":"testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"},
- {"id":"M21","rule":"R-F 2FA-enrolled refused","file":"lib/Service/AccountPolicy.php","edits":[["->isTwoFactorAuthenticated($user)) {","->isTwoFactorAuthenticated($user) && false) {"]],"tests":"testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"},
- {"id":"M22","rule":"R-F disabled refused","file":"lib/Service/AccountPolicy.php","edits":[["if (!$user->isEnabled()) {","if (false) {"]],"tests":"testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"},
- {"id":"M23","rule":"RW-01 a failure while deciding refuses (fail closed)","file":"lib/Service/AccountPolicy.php","edits":[["return 'policy_error';","return null;"]],"tests":"testPolicyErrorFailsClosed"},
- {"id":"M24","rule":"R-F linked account is re-checked at login","file":"lib/Service/AccountService.php","edits":[["$this->refuseIfIneligible($user);\\n\\t\\t\\t\\treturn ['type' => CodeStore::TYPE_LOGIN, 'uid' => $uid, 'hash' => $hash];","return ['type' => CodeStore::TYPE_LOGIN, 'uid' => $uid, 'hash' => $hash];"]],"tests":"testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"},
- {"id":"M25","rule":"R-F existing unlinked account is checked before a claim is offered","file":"lib/Service/AccountService.php","edits":[["$this->refuseIfIneligible($holder);\\n","\\n"]],"tests":"testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink"},
- {"id":"M26","rule":"R-F update refuses ineligible accounts","file":"lib/Service/AccountService.php","edits":[["$this->refuseIfIneligible($user);\\n\\n\\t\\tif ($newEmail !== null) {","\\n\\t\\tif ($newEmail !== null) {"]],"tests":"testPrivilegedAccountIsRefusedOnUpdateToo|testDisabledAccountIsRefusedOnUpdate"},
- {"id":"M27","rule":"R-G two accounts with one e-mail are ambiguous","file":"lib/Service/AccountService.php","edits":[["if (count($holders) > 1) {","if (false) {"]],"tests":"testTwoAccountsWithTheSameEmailAreAmbiguous"},
- {"id":"M28","rule":"R-G squatter (profile e-mail edited) blocks only the victim","file":"lib/Service/AccountService.php","edits":[["if ($this->links->hashForUid($holder->getUID()) !== null) {","if (false) {"]],"tests":"testLinkedAccountWhoseProfileEmailIsEditedToAVictimBlocksOnlyTheVictim"},
- {"id":"M29","rule":"R-G the link table, not the profile e-mail, finds a linked account","file":"lib/Service/AccountService.php","edits":[["$uid = $this->links->uidForEmailHash($hash);\\n\\t\\tif ($uid !== null) {","$uid = $this->profileHolders($email)[0]?->getUID();\\n\\t\\tif ($uid !== null) {"]],"tests":"testProfileEmailChangeNeitherGrantsNorRemovesAccess"},
- {"id":"M30","rule":"R-H Nextcloud registration domain rules apply to new accounts","file":"lib/Service/AccountService.php","edits":[["$this->assertRegistrationRules($email);\\n","\\n"]],"tests":"testAllowedDomainsListIsHonoured|testBlocklistModeIsHonoured"},
- {"id":"M31","rule":"R-H admin approval blocks creation","file":"lib/Service/AccountService.php","edits":[["'admin_approval_required', ''))) {","'admin_approval_required', ''))\\n\\t\\t\\t&& false) {"]],"tests":"testAdminApprovalRequiredRefusesNewAccounts"},
- {"id":"M32","rule":"R-H blocklist mode inverts the domain list","file":"lib/Service/AccountService.php","edits":[["if ($blocklist === $listed) {","if (!$listed) {"]],"tests":"testBlocklistModeIsHonoured"},
- {"id":"M33","rule":"R-I a squatted predictable uid does not block creation","file":"lib/Service/AccountService.php","edits":[["for ($i = 0; $this->users->userExists($uid); $i++) {","for ($i = 0; false; $i++) {"]],"tests":"testSquattedUidDoesNotBlockTheNewAccount"},
- {"id":"M34","rule":"R-I created e-mail is marked verified","file":"lib/Service/AccountService.php","edits":[["->setLocallyVerified(IAccountManager::VERIFIED);","->setLocallyVerified(IAccountManager::NOT_VERIFIED);"]],"tests":"testNewWiUserGetsAnAccountFromTheWiEmail"},
- {"id":"M35","rule":"RW-03 the generated password is random per account","file":"lib/Service/AccountService.php","edits":[["return $this->random->generate(16, ISecureRandom::CHAR_LOWER)","return 'abcdefghijklmnop'"],[". $this->random->generate(16, ISecureRandom::CHAR_UPPER)",". 'ABCDEFGHIJKLMNOP'"],[". $this->random->generate(16, ISecureRandom::CHAR_DIGITS)",". '0123456789012345'"],[". $this->random->generate(8, ISecureRandom::CHAR_SYMBOLS);",". '!!!!!!!!';"]],"tests":"testGeneratedPasswordIsRandomAndLongEnough"},
- {"id":"M36","rule":"D-NC-003 wisso sets no quota of its own","file":"lib/Service/AccountService.php","edits":[["// no quota of its own: the instance default for new users applies, as for any other new account","$user->setQuota('1 GB');"]],"tests":"testCreatedUserGetsTheInstanceDefaultQuota"},
- {"id":"M37","rule":"R-K update never creates and finds only linked accounts","file":"lib/Service/AccountService.php","edits":[["$user = $uid === null ? null : $this->users->get($uid);\\n\\t\\tif ($user === null) {\\n\\t\\t\\tthrow new SsoRefusal('not_linked', 404);","$user = $uid === null ? ($this->profileHolders($email)[0] ?? null) : $this->users->get($uid);\\n\\t\\t$uid = $user?->getUID();\\n\\t\\tif ($user === null) {\\n\\t\\t\\tthrow new SsoRefusal('not_linked', 404);"]],"tests":"testUnlinkedAccountWithTheSameEmailIsNotUpdated"},
- {"id":"M38","rule":"R-K new_email may not collide with a profile e-mail of another account","file":"lib/Service/AccountService.php","edits":[["if ($holder->getUID() !== $uid) {","if (false) {"]],"tests":"testNewEmailCollisionsAre422AndNothingChanges"},
- {"id":"M39","rule":"R-L code expires (60 s)","file":"lib/Service/CodeStore.php","edits":[["->andWhere($qb->expr()->gt('expires_at', $qb->createNamedParameter($this->time->getTime())));\\n\\t\\t$row = $qb->executeQuery()->fetch();",";\\n\\t\\t$row = $qb->executeQuery()->fetch();"]],"tests":"testExpiredCodeIsRefused|testExpiredCodeIsAnExpiredLinkPage"},
- {"id":"M40","rule":"R-L login code lifetime is 60 s","file":"lib/Service/CodeStore.php","edits":[["self::TYPE_LOGIN => 60","self::TYPE_LOGIN => 6000"]],"tests":"testCodeIsStoredHashedAndOnePerAccount"},
- {"id":"M41","rule":"R-L login and claim codes are disjoint types","file":"lib/Service/CodeStore.php","edits":[["->andWhere($qb->expr()->eq('type', $qb->createNamedParameter($type)))\\n\\t\\t\\t->andWhere($qb->expr()->gt","->andWhere($qb->expr()->gt"]],"tests":"testClaimCodeIsNotASignInCodeAndTheReverse"},
- {"id":"M42","rule":"R-L a new code removes the older one of the account","file":"lib/Service/CodeStore.php","edits":[["$del->executeStatement();\\n\\n\\t\\t$code = rtrim","\\n\\t\\t$code = rtrim"]],"tests":"testCodeIsStoredHashedAndOnePerAccount"},
- {"id":"M43","rule":"R-L code stored only as a hash","file":"lib/Service/CodeStore.php","edits":[["'code_hash' => $ins->createNamedParameter(hash('sha256', $code)),","'code_hash' => $ins->createNamedParameter(substr($code . $code . $code . $code . $code . $code, 0, 64)),"]],"tests":"testCodeIsStoredHashedAndOnePerAccount"},
- {"id":"M44","rule":"R-M consume is single use (code deleted)","file":"lib/Service/CodeStore.php","edits":[["if ($del->executeStatement() !== 1) {\\n\\t\\t\\treturn null;\\n\\t\\t}\\n\\t\\treturn ['uid' => $row['uid']","if (false) {\\n\\t\\t\\treturn null;\\n\\t\\t}\\n\\t\\treturn ['uid' => $row['uid']"]],"tests":"testParallelPresentationsOfOneCodeSignInExactlyOne"},
- {"id":"M45","rule":"R-M consume actually deletes the code row","file":"lib/Service/CodeStore.php","edits":[["->andWhere($del->expr()->eq('code_hash', $del->createNamedParameter(hash('sha256', $code))))\\n\\t\\t\\t->andWhere($del->expr()->eq('type', $del->createNamedParameter($type)))","->andWhere($del->expr()->eq('code_hash', $del->createNamedParameter(str_repeat('0', 64))))\\n\\t\\t\\t->andWhere($del->expr()->eq('type', $del->createNamedParameter($type)))"]],"tests":"testCodeCannotBeReplayed"},
- {"id":"M46","rule":"R-N HEAD never consumes","file":"lib/Controller/SsoController.php","edits":[["if ($this->request->getMethod() === 'HEAD') {\\n\\t\\t\\treturn true;","if ($this->request->getMethod() === 'HEAD') {\\n\\t\\t\\treturn false;"]],"tests":"testHeadAndPrefetchNeitherReadNorConsume|testHeadAndPrefetchDoNotReadTheClaimCode"},
- {"id":"M47","rule":"R-N prefetch and preview headers never consume","file":"lib/Controller/SsoController.php","edits":[["'/prefetch|prerender|preview/'","'/zzzzz/'"]],"tests":"testHeadAndPrefetchNeitherReadNorConsume|testHeadAndPrefetchDoNotReadTheClaimCode"},
- {"id":"M48","rule":"R-O a different signed-in user is not switched and the code is kept","file":"lib/Controller/SsoController.php","edits":[["if ($current !== null && $current->getUID() !== $row['uid']) {","if (false) {"]],"tests":"testDifferentSignedInUserGetsAPageAndTheCodeSurvives"},
- {"id":"M49","rule":"R-P consume re-checks the link row","file":"lib/Controller/SsoController.php","edits":[["if ($this->links->hashForUid($consumed['uid']) !== $consumed['email_sha256']) {","if (false) {"]],"tests":"testStateChangesBetweenLoginAndConsumeAreCaught"},
- {"id":"M50","rule":"R-P consume re-checks admin, delegated admin, sub-admin, disabled, 2FA","file":"lib/Controller/SsoController.php","edits":[["if ($refusal !== null) {\\n\\t\\t\\t\\treturn $this->fail($refusal, $consumed['uid']);","if (false) {\\n\\t\\t\\t\\treturn $this->fail($refusal, $consumed['uid']);"]],"tests":"testStateChangesBetweenLoginAndConsumeAreCaught"},
- {"id":"M51","rule":"R-P consume refuses a deleted account","file":"lib/Controller/SsoController.php","edits":[["if ($user === null) {\\n\\t\\t\\t\\treturn $this->fail('no_user');","if (false) {\\n\\t\\t\\t\\treturn $this->fail('no_user');"]],"tests":"testDeletedAccountBetweenLoginAndConsumeIsRefused"},
- {"id":"M52","rule":"R-Q session id regenerated at sign-in","file":"lib/Controller/SsoController.php","edits":[["'password' => ''], true);","'password' => ''], false);"]],"tests":"testHappyPathSignsTheUserInAndRegeneratesTheSession"},
- {"id":"M53","rule":"R-Q a signed-in session is created at consume","file":"lib/Controller/SsoController.php","edits":[["if ($current === null) {\\n\\t\\t\\t\\t$this->signIn($user);\\n\\t\\t\\t}","if ($current === null) {\\n\\t\\t\\t}"]],"tests":"testHappyPathSignsTheUserInAndRegeneratesTheSession"},
- {"id":"M54","rule":"R-R `to` is validated again at consume","file":"lib/Controller/SsoController.php","edits":[["return $this->redirect($this->urls->destination($this->redirects->normalize($this->param('to'))));","return $this->redirect($this->urls->destination($this->param('to')));"]],"tests":"testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"},
- {"id":"M55","rule":"R-R redirect path restricted to apps (login)","file":"lib/Service/RedirectValidator.php","edits":[["const PATTERN = '#^/(?:index\\.php/)?(apps/[a-z0-9_]+(?:/[A-Za-z0-9_-]+)*)/?$#D';","const PATTERN = '#^/(?:index\\.php/)?(.+)$#D';"]],"tests":"testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"},
- {"id":"M56","rule":"R-R redirect length limit","file":"lib/Service/RedirectValidator.php","edits":[["const MAX_LENGTH = 200;","const MAX_LENGTH = 200000;"]],"tests":"testTooLongRedirectFallsBack"},
- {"id":"M57","rule":"R-R redirect control characters rejected","file":"lib/Service/RedirectValidator.php","edits":[["if (preg_match('/[\\x00-\\x1F\\x7F%\\\\\\\\.]/', $rest) === 1) {","if (preg_match('/[\\x7F%\\\\\\\\.]/', $rest) === 1) {"]],"tests":"testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"},
- {"id":"M58","rule":"R-S consume answers no-store","file":"lib/Controller/SsoController.php","edits":[["$response = new RedirectResponse($location);\\n\\t\\t$response->addHeader('Cache-Control', 'no-store');","$response = new RedirectResponse($location);"]],"tests":"testHappyPathSignsTheUserInAndRegeneratesTheSession"},
- {"id":"M59","rule":"R-T claim: wrong signed-in user cannot confirm","file":"lib/Controller/SsoController.php","edits":[["if ($current->getUID() !== $row['uid']) {\\n\\t\\t\\t$this->log->event('claim_denied', 'claim_wrong_user');","if (false) {\\n\\t\\t\\t$this->log->event('claim_denied', 'claim_wrong_user');"]],"tests":"testOtherSignedInUserGetsThe409Page|testPostFromTheWrongSignedInUserLinksNothing"},
- {"id":"M60","rule":"R-J claim needs a fresh password sign-in","file":"lib/Controller/SsoController.php","edits":[["if (!is_int($confirmed) || $this->time->getTime() - $confirmed > self::FRESH_PASSWORD_SECONDS) {","if (false) {"]],"tests":"testSessionWithoutAFreshPasswordSignInMustSignInAgain"},
- {"id":"M61","rule":"R-T claim re-checks privilege, disabled and 2FA","file":"lib/Controller/SsoController.php","edits":[["if ($refusal !== null) {\\n\\t\\t\\t$this->log->event('claim_denied', $refusal, $current->getUID());","if (false) {\\n\\t\\t\\t$this->log->event('claim_denied', $refusal, $current->getUID());"]],"tests":"testAccountStateChangesBeforeTheConfirmAreCaught"},
- {"id":"M62","rule":"R-T claim refuses when the profile e-mail changed after the offer","file":"lib/Controller/SsoController.php","edits":[["if ($stored === null || Input::emailHash($stored) !== $row['email_sha256']) {","if (false) {"]],"tests":"testAccountStateChangesBeforeTheConfirmAreCaught"},
- {"id":"M63","rule":"R-T own session-bound form token is checked","file":"lib/Controller/SsoController.php","edits":[["if (!is_string($expected) || $expected === '' || !hash_equals($expected, $given)) {","if (false) {"]],"tests":"testPostWithoutOwnTokenOrWithAWrongOneIsRefusedAndKeepsTheCode|testSecondTabWithTheOlderFormTokenFails"},
- {"id":"M64","rule":"R-T claim code is consumed together with the link","file":"lib/Controller/SsoController.php","edits":[["$consumed = $this->codes->consume($code, CodeStore::TYPE_CLAIM);\\n\\t\\t\\t// the id","$consumed = $this->codes->peek($code, CodeStore::TYPE_CLAIM);\\n\\t\\t\\t// the id"]],"tests":"testConfirmLinksOnceAndTheNextWiClickSignsInDirectly"},
- {"id":"M65","rule":"R-T the claim page reads only claim-type codes","file":"lib/Controller/SsoController.php","edits":[["$row = $this->codes->peek($this->param('code'), CodeStore::TYPE_CLAIM);","$row = $this->codes->peek($this->param('code'), CodeStore::TYPE_LOGIN);"]],"tests":"testOwnerSeesTheConfirmPageWithSafeHeaders|testClaimCodeIsNotASignInCodeAndTheReverse"},
- {"id":"M66","rule":"R-T claim POST normalises `to`","file":"lib/Controller/SsoController.php","edits":[["$to = $this->redirects->normalize($this->param('to'));\\n\\t\\t\\tif (!$this->link($code, $current)) {","$to = $this->param('to');\\n\\t\\t\\tif (!$this->link($code, $current)) {"]],"tests":"testTamperedToIsNormalisedOnPost"},
- {"id":"M67","rule":"R-T claim pages escape every value","file":"lib/Service/Pages.php","edits":[["return htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');","return $v;"]],"tests":"testOwnerSeesTheConfirmPageWithSafeHeaders"},
- {"id":"M68","rule":"R-T claim pages: form-action self in the CSP","file":"lib/Service/Pages.php","edits":[["$csp->addAllowedFormActionDomain(\"'self'\");","\\n"]],"tests":"testOwnerSeesTheConfirmPageWithSafeHeaders"},
- {"id":"M69","rule":"R-T claim pages carry no-store","file":"lib/Service/Pages.php","edits":[["$response->addHeader('Cache-Control', 'no-store');\\n\\t\\t$response->addHeader('X-Frame-Options', 'DENY');","$response->addHeader('X-Frame-Options', 'DENY');"]],"tests":"testOwnerSeesTheConfirmPageWithSafeHeaders"},
- {"id":"M70","rule":"R-T every page has Arabic and English text","file":"lib/Service/Pages.php","edits":[["'<section lang=\"ar\" dir=\"rtl\"><p>' . $this->e($ar) . '</p></section>'","'<section lang=\"ar\" dir=\"rtl\"><p></p></section>'"]],"tests":"testEveryPageIsBilingual"},
- {"id":"M71","rule":"R-U deleting an account removes its link and codes","file":"lib/Listener/UserDeletedListener.php","edits":[["$this->links->deleteForUid($uid);","\\n"]],"tests":"testDeletingAnAccountRemovesItsLinkAndCodes|testReusedAccountIdDoesNotInheritTheOldLink"},
- {"id":"M72","rule":"R-V the log carries no account id, only a reference","file":"lib/Service/SsoLog.php","edits":[["$line .= ' uid_ref=' . self::ref($uid);","$line .= ' uid_ref=' . $uid;"]],"tests":"testWissoMessagesHaveTheFixedShapeAndNoValues"},
- {"id":"M73","rule":"R-V the log never carries the key","file":"lib/Controller/ApiController.php","edits":[["$this->log->event('login_denied', $reason);\\n\\t\\t\\treturn;","$this->log->event('login_denied', $reason, null, ['k' => (string)KeyChecker::bearer($this->request->getHeader('Authorization'))]);\\n\\t\\t\\treturn;"],["if ($n <= self::BAD_KEY_LOG_PER_MINUTE) {\\n\\t\\t\\t$this->log->event('login_denied', $reason);","if ($n <= self::BAD_KEY_LOG_PER_MINUTE) {\\n\\t\\t\\t$this->log->event('login_denied', $reason, null, ['k' => (string)KeyChecker::bearer($this->request->getHeader('Authorization'))]);"]],"tests":"testNoSecretAppearsInAnyWissoLineExceptCodesInTheUrlContext"},
- {"id":"M74","rule":"R-V bad-key log lines are capped per minute","file":"lib/Controller/ApiController.php","edits":[["if ($n <= self::BAD_KEY_LOG_PER_MINUTE) {","if (true) {"]],"tests":"testBadKeyLogLinesAreCapped"},
- {"id":"M75","rule":"R-W occ wisso:status never prints the key hash","file":"lib/Command/Status.php","edits":[["$output->writeln('key configured: ' . ($this->key->isConfigured() ? 'yes' : 'no'));","$output->writeln('key configured: ' . ($this->key->isConfigured() ? 'yes ' . $this->appConfig->getValueString('wisso', 'key_sha256', '') : 'no'));"]],"tests":"testStatusIsReadOnlyAndNeverPrintsTheKeyOrItsHash"},
- {"id":"M76","rule":"R-W key:generate refuses to replace a key without --rotate","file":"lib/Command/KeyGenerate.php","edits":[["if ($this->key->isConfigured() && !$input->getOption('rotate')) {","if (false) {"]],"tests":"testKeyGenerateRefusesToReplaceWithoutRotate"},
- {"id":"M77","rule":"R-W key:generate stores only the hash of the printed key","file":"lib/Command/KeyGenerate.php","edits":[["$this->key->setHash($hash);","$this->key->setHash(hash('sha256', $hash));"]],"tests":"testKeyGenerateAndRotateStoreOnlyTheHashAndTheOldKeyDies"},
- {"id":"M78","rule":"R-W unlink removes the link but keeps the account","file":"lib/Command/Unlink.php","edits":[["$removed = $this->links->deleteForUid($uid);","$removed = 1;"]],"tests":"testUnlinkRemovesTheLinkKeepsTheAccountAndTheNextClickIsAClaim"}
+ {
+  "id": "M01",
+  "rule": "R-A key compared with hash_equals",
+  "file": "lib/Service/KeyChecker.php",
+  "edits": [
+   [
+    "return hash_equals($stored, hash('sha256', $token));",
+    "return true;"
+   ]
+  ],
+  "tests": "testWrongKeyIs401Json|testMalformedKeysAre401"
+ },
+ {
+  "id": "M02",
+  "rule": "R-A setHash refuses a non-hash (raw key never stored)",
+  "file": "lib/Service/KeyChecker.php",
+  "edits": [
+   [
+    "if (!self::isHashShape($hash)) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testKeyCheckerRefusesToStoreARawKey"
+ },
+ {
+  "id": "M03",
+  "rule": "R-A only the Bearer scheme is accepted",
+  "file": "lib/Service/KeyChecker.php",
+  "edits": [
+   [
+    "'/^Bearer (\\S+)$/D'",
+    "'/^\\S+ (\\S+)$/D'"
+   ]
+  ],
+  "tests": "testOtherAuthorizationSchemesAreRefusedEvenWithTheRightKey"
+ },
+ {
+  "id": "M04",
+  "rule": "R-A a bad key fills no rate bucket (cannot lock the real key out)",
+  "file": "lib/Controller/ApiController.php",
+  "edits": [
+   [
+    "$this->badKeyLog('bad_key');\\n\\t\\t\\tthrow new SsoRefusal('bad_key', 401);",
+    "$this->throttle->apiCall(hash('sha256', strtolower((string)$this->request->getParam('email'))));\\n\\t\\t\\tthrow new SsoRefusal('bad_key', 401);"
+   ]
+  ],
+  "tests": "testBadKeysNeverFillTheBucket"
+ },
+ {
+  "id": "M05",
+  "rule": "R-B per-email limit 10/min on login",
+  "file": "lib/Service/Throttle.php",
+  "edits": [
+   [
+    "'wisso_email_' . $emailHash, 10, 60",
+    "'wisso_email_' . $emailHash, 10000, 60"
+   ]
+  ],
+  "tests": "testSameEmailIsLimitedToTenPerMinute"
+ },
+ {
+  "id": "M06",
+  "rule": "R-B global limit 120/min",
+  "file": "lib/Service/Throttle.php",
+  "edits": [
+   [
+    "'wisso_global', 120, 60",
+    "'wisso_global', 120000, 60"
+   ]
+  ],
+  "tests": "testGlobalBucketIsLimitedToOneHundredTwentyPerMinute"
+ },
+ {
+  "id": "M07",
+  "rule": "R-B throttle called on login",
+  "file": "lib/Controller/ApiController.php",
+  "edits": [
+   [
+    "$this->throttle->apiCall(Input::emailHash($email));\\n\\t\\t\\t$to = ",
+    "$to = "
+   ]
+  ],
+  "tests": "testSameEmailIsLimitedToTenPerMinute"
+ },
+ {
+  "id": "M08",
+  "rule": "R-C consume: 30 per minute per client address",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "'wisso_consume', 30,",
+    "'wisso_consume', 30000,"
+   ]
+  ],
+  "tests": "testConsumeIsLimitedPerClientAddress"
+ },
+ {
+  "id": "M09",
+  "rule": "R-C claim confirm: 5 per minute per user",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "'wisso_claim_user', 5,",
+    "'wisso_claim_user', 5000,"
+   ]
+  ],
+  "tests": "testClaimConfirmIsLimitedPerUser"
+ },
+ {
+  "id": "M10",
+  "rule": "R-D every failure on the admin-api prefix is JSON (internal error)",
+  "file": "lib/Controller/ApiController.php",
+  "edits": [
+   [
+    "} catch (SsoRefusal $r) {\\n\\t\\t\\treturn $this->refuse($r, 'login_denied');\\n\\t\\t} catch (\\Throwable $e) {\\n\\t\\t\\treturn $this->failed($e);",
+    "} catch (SsoRefusal $r) {\\n\\t\\t\\treturn $this->refuse($r, 'login_denied');\\n\\t\\t} catch (\\Throwable $e) {\\n\\t\\t\\tthrow $e;"
+   ]
+  ],
+  "tests": "testInternalFailureIsGenericJsonEvenWithDebug"
+ },
+ {
+  "id": "M11",
+  "rule": "R-D the 500 body never carries an exception message",
+  "file": "lib/Controller/ApiController.php",
+  "edits": [
+   [
+    "return $this->json($this->errorBody(500), 500);\\n\\t}\\n\\n\\tprivate function errorBody",
+    "return $this->json(['errors' => [['title' => $e->getMessage()]]], 500);\\n\\t}\\n\\n\\tprivate function errorBody"
+   ]
+  ],
+  "tests": "testInternalFailureIsGenericJsonEvenWithDebug"
+ },
+ {
+  "id": "M12",
+  "rule": "R-D unknown GET under admin-api is JSON",
+  "file": "appinfo/routes.php",
+  "edits": [
+   [
+    "['name' => 'api#fallbackGet', 'url' => '/admin-api/{path}', 'verb' => 'GET', 'requirements' => ['path' => '.+']],\\n",
+    ""
+   ]
+  ],
+  "tests": "testUnknownPathsAre404Json|testGetOnLoginIs405Json",
+  "restart": true
+ },
+ {
+  "id": "M13",
+  "rule": "R-D unknown DELETE under admin-api is JSON",
+  "file": "appinfo/routes.php",
+  "edits": [
+   [
+    "['name' => 'api#fallbackDelete', 'url' => '/admin-api/{path}', 'verb' => 'DELETE', 'requirements' => ['path' => '.+']],\\n",
+    ""
+   ]
+  ],
+  "tests": "testUnknownPathsAre404Json",
+  "restart": true
+ },
+ {
+  "id": "M14",
+  "rule": "R-E the URL is built from overwrite.cli.url, never the Host",
+  "file": "lib/Service/Urls.php",
+  "edits": [
+   [
+    "return $this->base() . '/index.php/apps/wisso/' . ltrim($path, '/');",
+    "return 'https://' . ($_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST']) . '/index.php/apps/wisso/' . ltrim($path, '/');"
+   ]
+  ],
+  "tests": "testUrlComesFromOverwriteCliUrlNotFromTheHostHeader"
+ },
+ {
+  "id": "M15",
+  "rule": "R-E the e-mail is canonicalised (lower case) before hashing",
+  "file": "lib/Service/Input.php",
+  "edits": [
+   [
+    "$e = strtolower(trim($value));",
+    "$e = trim($value);"
+   ]
+  ],
+  "tests": "testNewWiUserGetsAnAccountFromTheWiEmail"
+ },
+ {
+  "id": "M16",
+  "rule": "R-E name: control and bidi characters stripped",
+  "file": "lib/Service/Input.php",
+  "edits": [
+   [
+    "'/[\\p{Cc}\\p{Cf}\\p{Zl}\\p{Zp}]/u'",
+    "'/\\x{FFFF}/u'"
+   ]
+  ],
+  "tests": "testNameRules|testNameIsUpdatedCleanedAndCut"
+ },
+ {
+  "id": "M17",
+  "rule": "R-E display name cut to the 64-character column",
+  "file": "lib/Service/Input.php",
+  "edits": [
+   [
+    "return mb_substr($name, 0, self::DISPLAY_NAME_MAX);",
+    "return $name;"
+   ]
+  ],
+  "tests": "testNameRules|testNameIsUpdatedCleanedAndCut"
+ },
+ {
+  "id": "M18",
+  "rule": "R-F admin refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "edits": [
+   [
+    "if ($this->groups->isAdmin($user->getUID())) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+ },
+ {
+  "id": "M19",
+  "rule": "R-F sub-admin refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "edits": [
+   [
+    "if ($this->subAdmins->isSubAdmin($user)) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+ },
+ {
+  "id": "M20",
+  "rule": "R-F delegated admin refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "edits": [
+   [
+    "->findAllClassesForUser($user) !== []) {",
+    "->findAllClassesForUser($user) === 'never') {"
+   ]
+  ],
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+ },
+ {
+  "id": "M21",
+  "rule": "R-F 2FA-enrolled refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "edits": [
+   [
+    "->isTwoFactorAuthenticated($user)) {",
+    "->isTwoFactorAuthenticated($user) && false) {"
+   ]
+  ],
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+ },
+ {
+  "id": "M22",
+  "rule": "R-F disabled refused",
+  "file": "lib/Service/AccountPolicy.php",
+  "edits": [
+   [
+    "if (!$user->isEnabled()) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink|testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+ },
+ {
+  "id": "M23",
+  "rule": "RW-01 a failure while deciding refuses (fail closed)",
+  "file": "lib/Service/AccountPolicy.php",
+  "edits": [
+   [
+    "return 'policy_error';",
+    "return null;"
+   ]
+  ],
+  "tests": "testPolicyErrorFailsClosed"
+ },
+ {
+  "id": "M24",
+  "rule": "R-F linked account is re-checked at login",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "$this->refuseIfIneligible($user);\\n\\t\\t\\t\\treturn ['type' => CodeStore::TYPE_LOGIN, 'uid' => $uid, 'hash' => $hash];",
+    "return ['type' => CodeStore::TYPE_LOGIN, 'uid' => $uid, 'hash' => $hash];"
+   ]
+  ],
+  "tests": "testLinkedAccountThatBecomesPrivilegedIsRefusedAtLogin"
+ },
+ {
+  "id": "M25",
+  "rule": "R-F existing unlinked account is checked before a claim is offered",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "$this->refuseIfIneligible($holder);\\n",
+    "\\n"
+   ]
+  ],
+  "tests": "testPrivilegedAndUnsafeAccountsAreRefusedBeforeAnyLink"
+ },
+ {
+  "id": "M26",
+  "rule": "R-F update refuses ineligible accounts",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "$this->refuseIfIneligible($user);\\n\\n\\t\\tif ($newEmail !== null) {",
+    "\\n\\t\\tif ($newEmail !== null) {"
+   ]
+  ],
+  "tests": "testPrivilegedAccountIsRefusedOnUpdateToo|testDisabledAccountIsRefusedOnUpdate"
+ },
+ {
+  "id": "M27",
+  "rule": "R-G two accounts with one e-mail are ambiguous",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "if (count($holders) > 1) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testTwoAccountsWithTheSameEmailAreAmbiguous"
+ },
+ {
+  "id": "M28",
+  "rule": "R-G squatter (profile e-mail edited) blocks only the victim",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "if ($this->links->hashForUid($holder->getUID()) !== null) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testLinkedAccountWhoseProfileEmailIsEditedToAVictimBlocksOnlyTheVictim"
+ },
+ {
+  "id": "M29",
+  "rule": "R-G the link table, not the profile e-mail, finds a linked account",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "$uid = $this->links->uidForEmailHash($hash);\\n\\t\\tif ($uid !== null) {",
+    "$uid = $this->profileHolders($email)[0]?->getUID();\\n\\t\\tif ($uid !== null) {"
+   ]
+  ],
+  "tests": "testProfileEmailChangeNeitherGrantsNorRemovesAccess"
+ },
+ {
+  "id": "M30",
+  "rule": "R-H Nextcloud registration domain rules apply to new accounts",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "$this->assertRegistrationRules($email);\\n",
+    "\\n"
+   ]
+  ],
+  "tests": "testAllowedDomainsListIsHonoured|testBlocklistModeIsHonoured"
+ },
+ {
+  "id": "M31",
+  "rule": "R-H admin approval blocks creation",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "'admin_approval_required', ''))) {",
+    "'admin_approval_required', ''))\\n\\t\\t\\t&& false) {"
+   ]
+  ],
+  "tests": "testAdminApprovalRequiredRefusesNewAccounts"
+ },
+ {
+  "id": "M32",
+  "rule": "R-H blocklist mode inverts the domain list",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "if ($blocklist === $listed) {",
+    "if (!$listed) {"
+   ]
+  ],
+  "tests": "testBlocklistModeIsHonoured"
+ },
+ {
+  "id": "M33",
+  "rule": "R-I a squatted predictable uid does not block creation",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "for ($i = 0; $this->users->userExists($uid); $i++) {",
+    "for ($i = 0; false; $i++) {"
+   ]
+  ],
+  "tests": "testSquattedUidDoesNotBlockTheNewAccount"
+ },
+ {
+  "id": "M34",
+  "rule": "R-I created e-mail is marked verified",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "->setLocallyVerified(IAccountManager::VERIFIED);",
+    "->setLocallyVerified(IAccountManager::NOT_VERIFIED);"
+   ]
+  ],
+  "tests": "testNewWiUserGetsAnAccountFromTheWiEmail"
+ },
+ {
+  "id": "M35",
+  "rule": "RW-03 the generated password is random per account",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "return $this->random->generate(16, ISecureRandom::CHAR_LOWER)",
+    "return 'abcdefghijklmnop'"
+   ],
+   [
+    ". $this->random->generate(16, ISecureRandom::CHAR_UPPER)",
+    ". 'ABCDEFGHIJKLMNOP'"
+   ],
+   [
+    ". $this->random->generate(16, ISecureRandom::CHAR_DIGITS)",
+    ". '0123456789012345'"
+   ],
+   [
+    ". $this->random->generate(8, ISecureRandom::CHAR_SYMBOLS);",
+    ". '!!!!!!!!';"
+   ]
+  ],
+  "tests": "testGeneratedPasswordIsRandomAndLongEnough"
+ },
+ {
+  "id": "M36",
+  "rule": "D-NC-003 wisso sets no quota of its own",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "// no quota of its own: the instance default for new users applies, as for any other new account",
+    "$user->setQuota('1 GB');"
+   ]
+  ],
+  "tests": "testCreatedUserGetsTheInstanceDefaultQuota"
+ },
+ {
+  "id": "M37",
+  "rule": "R-K update never creates and finds only linked accounts",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "$user = $uid === null ? null : $this->users->get($uid);\\n\\t\\tif ($user === null) {\\n\\t\\t\\tthrow new SsoRefusal('not_linked', 404);",
+    "$user = $uid === null ? ($this->profileHolders($email)[0] ?? null) : $this->users->get($uid);\\n\\t\\t$uid = $user?->getUID();\\n\\t\\tif ($user === null) {\\n\\t\\t\\tthrow new SsoRefusal('not_linked', 404);"
+   ]
+  ],
+  "tests": "testUnlinkedAccountWithTheSameEmailIsNotUpdated"
+ },
+ {
+  "id": "M38",
+  "rule": "R-K new_email may not collide with a profile e-mail of another account",
+  "file": "lib/Service/AccountService.php",
+  "edits": [
+   [
+    "if ($holder->getUID() !== $uid) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testNewEmailCollisionsAre422AndNothingChanges"
+ },
+ {
+  "id": "M39",
+  "rule": "R-L code expires (60 s)",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "->andWhere($qb->expr()->gt('expires_at', $qb->createNamedParameter($this->time->getTime())));\\n\\t\\t$row = $qb->executeQuery()->fetch();",
+    ";\\n\\t\\t$row = $qb->executeQuery()->fetch();"
+   ]
+  ],
+  "tests": "testExpiredCodeIsRefused|testExpiredCodeIsAnExpiredLinkPage"
+ },
+ {
+  "id": "M40",
+  "rule": "R-L login code lifetime is 60 s",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "self::TYPE_LOGIN => 60",
+    "self::TYPE_LOGIN => 6000"
+   ]
+  ],
+  "tests": "testCodeIsStoredHashedAndOnePerAccount"
+ },
+ {
+  "id": "M41",
+  "rule": "R-L login and claim codes are disjoint types",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "->andWhere($qb->expr()->eq('type', $qb->createNamedParameter($type)))\\n\\t\\t\\t->andWhere($qb->expr()->gt",
+    "->andWhere($qb->expr()->gt"
+   ]
+  ],
+  "tests": "testClaimCodeIsNotASignInCodeAndTheReverse"
+ },
+ {
+  "id": "M42",
+  "rule": "R-L a new code removes the older one of the account",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "$del->executeStatement();\\n\\n\\t\\t$code = rtrim",
+    "\\n\\t\\t$code = rtrim"
+   ]
+  ],
+  "tests": "testCodeIsStoredHashedAndOnePerAccount"
+ },
+ {
+  "id": "M43",
+  "rule": "R-L code stored only as a hash",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "'code_hash' => $ins->createNamedParameter(hash('sha256', $code)),",
+    "'code_hash' => $ins->createNamedParameter(substr($code . $code . $code . $code . $code . $code, 0, 64)),"
+   ]
+  ],
+  "tests": "testCodeIsStoredHashedAndOnePerAccount"
+ },
+ {
+  "id": "M44",
+  "rule": "R-M consume is single use (code deleted)",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "if ($del->executeStatement() !== 1) {\\n\\t\\t\\treturn null;\\n\\t\\t}\\n\\t\\treturn ['uid' => $row['uid']",
+    "if (false) {\\n\\t\\t\\treturn null;\\n\\t\\t}\\n\\t\\treturn ['uid' => $row['uid']"
+   ]
+  ],
+  "tests": "testParallelPresentationsOfOneCodeSignInExactlyOne"
+ },
+ {
+  "id": "M45",
+  "rule": "R-M consume actually deletes the code row",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "->andWhere($del->expr()->eq('code_hash', $del->createNamedParameter(hash('sha256', $code))))\\n\\t\\t\\t->andWhere($del->expr()->eq('type', $del->createNamedParameter($type)))",
+    "->andWhere($del->expr()->eq('code_hash', $del->createNamedParameter(str_repeat('0', 64))))\\n\\t\\t\\t->andWhere($del->expr()->eq('type', $del->createNamedParameter($type)))"
+   ]
+  ],
+  "tests": "testCodeCannotBeReplayed"
+ },
+ {
+  "id": "M46",
+  "rule": "R-N HEAD never consumes",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($this->request->getMethod() === 'HEAD') {\\n\\t\\t\\treturn true;",
+    "if ($this->request->getMethod() === 'HEAD') {\\n\\t\\t\\treturn false;"
+   ]
+  ],
+  "tests": "testHeadAndPrefetchNeitherReadNorConsume|testHeadAndPrefetchDoNotReadTheClaimCode"
+ },
+ {
+  "id": "M47",
+  "rule": "R-N prefetch and preview headers never consume",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "'/prefetch|prerender|preview/'",
+    "'/zzzzz/'"
+   ]
+  ],
+  "tests": "testHeadAndPrefetchNeitherReadNorConsume|testHeadAndPrefetchDoNotReadTheClaimCode"
+ },
+ {
+  "id": "M48",
+  "rule": "R-O a different signed-in user is not switched and the code is kept",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($current !== null && $current->getUID() !== $row['uid']) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testDifferentSignedInUserGetsAPageAndTheCodeSurvives"
+ },
+ {
+  "id": "M49",
+  "rule": "R-P consume re-checks the link row",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($this->links->hashForUid($consumed['uid']) !== $consumed['email_sha256']) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testStateChangesBetweenLoginAndConsumeAreCaught"
+ },
+ {
+  "id": "M50",
+  "rule": "R-P consume re-checks admin, delegated admin, sub-admin, disabled, 2FA",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($refusal !== null) {\\n\\t\\t\\t\\treturn $this->fail($refusal, $consumed['uid']);",
+    "if (false) {\\n\\t\\t\\t\\treturn $this->fail($refusal, $consumed['uid']);"
+   ]
+  ],
+  "tests": "testStateChangesBetweenLoginAndConsumeAreCaught"
+ },
+ {
+  "id": "M51",
+  "rule": "R-P consume refuses a deleted account",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($user === null) {\\n\\t\\t\\t\\treturn $this->fail('no_user');",
+    "if (false) {\\n\\t\\t\\t\\treturn $this->fail('no_user');"
+   ]
+  ],
+  "tests": "testDeletedAccountBetweenLoginAndConsumeIsRefused"
+ },
+ {
+  "id": "M52",
+  "rule": "R-Q session id regenerated at sign-in",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "'password' => ''], true);",
+    "'password' => ''], false);"
+   ]
+  ],
+  "tests": "testHappyPathSignsTheUserInAndRegeneratesTheSession"
+ },
+ {
+  "id": "M53",
+  "rule": "R-Q a signed-in session is created at consume",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($current === null) {\\n\\t\\t\\t\\t$this->signIn($user);\\n\\t\\t\\t}",
+    "if ($current === null) {\\n\\t\\t\\t}"
+   ]
+  ],
+  "tests": "testHappyPathSignsTheUserInAndRegeneratesTheSession"
+ },
+ {
+  "id": "M54",
+  "rule": "R-R `to` is validated again at consume",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "return $this->redirect($this->urls->destination($this->redirects->normalize($this->param('to'))));",
+    "return $this->redirect($this->urls->destination($this->param('to')));"
+   ]
+  ],
+  "tests": "testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"
+ },
+ {
+  "id": "M55",
+  "rule": "R-R redirect path restricted to apps (login)",
+  "file": "lib/Service/RedirectValidator.php",
+  "edits": [
+   [
+    "const PATTERN = '#^/(?:index\\.php/)?(apps/[a-z0-9_]+(?:/[A-Za-z0-9_-]+)*)/?$#D';",
+    "const PATTERN = '#^/(?:index\\.php/)?(.+)$#D';"
+   ]
+  ],
+  "tests": "testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"
+ },
+ {
+  "id": "M56",
+  "rule": "R-R redirect length limit",
+  "file": "lib/Service/RedirectValidator.php",
+  "edits": [
+   [
+    "const MAX_LENGTH = 200;",
+    "const MAX_LENGTH = 200000;"
+   ]
+  ],
+  "tests": "testTooLongRedirectFallsBack"
+ },
+ {
+  "id": "M57",
+  "rule": "R-R redirect control characters rejected",
+  "file": "lib/Service/RedirectValidator.php",
+  "edits": [
+   [
+    "if (preg_match('/[\\x00-\\x1F\\x7F%\\\\\\\\.]/', $rest) === 1) {",
+    "if (preg_match('/[\\x7F%\\\\\\\\.]/', $rest) === 1) {"
+   ]
+  ],
+  "tests": "testBadRedirectsFallBackToTheDefaultAtLoginAndAtConsume"
+ },
+ {
+  "id": "M58",
+  "rule": "R-S consume answers no-store",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "$response = new RedirectResponse($location);\\n\\t\\t$response->addHeader('Cache-Control', 'no-store');",
+    "$response = new RedirectResponse($location);"
+   ]
+  ],
+  "tests": "testHappyPathSignsTheUserInAndRegeneratesTheSession"
+ },
+ {
+  "id": "M59",
+  "rule": "R-T claim: wrong signed-in user cannot confirm",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($current->getUID() !== $row['uid']) {\\n\\t\\t\\t$this->log->event('claim_denied', 'claim_wrong_user');",
+    "if (false) {\\n\\t\\t\\t$this->log->event('claim_denied', 'claim_wrong_user');"
+   ]
+  ],
+  "tests": "testOtherSignedInUserGetsThe409Page|testPostFromTheWrongSignedInUserLinksNothing"
+ },
+ {
+  "id": "M60",
+  "rule": "R-J claim needs a fresh password sign-in",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if (!is_int($confirmed) || $this->time->getTime() - $confirmed > self::FRESH_PASSWORD_SECONDS) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testSessionWithoutAFreshPasswordSignInMustSignInAgain"
+ },
+ {
+  "id": "M61",
+  "rule": "R-T claim re-checks privilege, disabled and 2FA",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($refusal !== null) {\\n\\t\\t\\t$this->log->event('claim_denied', $refusal, $current->getUID());",
+    "if (false) {\\n\\t\\t\\t$this->log->event('claim_denied', $refusal, $current->getUID());"
+   ]
+  ],
+  "tests": "testAccountStateChangesBeforeTheConfirmAreCaught"
+ },
+ {
+  "id": "M62",
+  "rule": "R-T claim refuses when the profile e-mail changed after the offer",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if ($stored === null || Input::emailHash($stored) !== $row['email_sha256']) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testAccountStateChangesBeforeTheConfirmAreCaught"
+ },
+ {
+  "id": "M63",
+  "rule": "R-T own session-bound form token is checked",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "if (!is_string($expected) || $expected === '' || !hash_equals($expected, $given)) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testPostWithoutOwnTokenOrWithAWrongOneIsRefusedAndKeepsTheCode|testSecondTabWithTheOlderFormTokenFails"
+ },
+ {
+  "id": "M64",
+  "rule": "R-T claim code is consumed together with the link",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "$consumed = $this->codes->consume($code, CodeStore::TYPE_CLAIM);\\n\\t\\t\\t// the id",
+    "$consumed = $this->codes->peek($code, CodeStore::TYPE_CLAIM);\\n\\t\\t\\t// the id"
+   ]
+  ],
+  "tests": "testConfirmLinksOnceAndTheNextWiClickSignsInDirectly"
+ },
+ {
+  "id": "M65",
+  "rule": "R-T the claim page reads only claim-type codes",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "$row = $this->codes->peek($this->param('code'), CodeStore::TYPE_CLAIM);",
+    "$row = $this->codes->peek($this->param('code'), CodeStore::TYPE_LOGIN);"
+   ]
+  ],
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders|testClaimCodeIsNotASignInCodeAndTheReverse"
+ },
+ {
+  "id": "M66",
+  "rule": "R-T claim POST normalises `to`",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "$to = $this->redirects->normalize($this->param('to'));\\n\\t\\t\\tif (!$this->link($code, $current)) {",
+    "$to = $this->param('to');\\n\\t\\t\\tif (!$this->link($code, $current)) {"
+   ]
+  ],
+  "tests": "testTamperedToIsNormalisedOnPost"
+ },
+ {
+  "id": "M67",
+  "rule": "R-T claim pages escape every value",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "return htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');",
+    "return $v;"
+   ]
+  ],
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders"
+ },
+ {
+  "id": "M68",
+  "rule": "R-T claim pages: form-action self in the CSP",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "$csp->addAllowedFormActionDomain(\"'self'\");",
+    "\\n"
+   ]
+  ],
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders"
+ },
+ {
+  "id": "M69",
+  "rule": "R-T claim pages carry no-store",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "$response->addHeader('Cache-Control', 'no-store');\\n\\t\\t$response->addHeader('X-Frame-Options', 'DENY');",
+    "$response->addHeader('X-Frame-Options', 'DENY');"
+   ]
+  ],
+  "tests": "testOwnerSeesTheConfirmPageWithSafeHeaders"
+ },
+ {
+  "id": "M70",
+  "rule": "R-T every page has Arabic and English text",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<section lang=\"ar\" dir=\"rtl\"><p>' . $this->e($ar) . '</p></section>'",
+    "'<section lang=\"ar\" dir=\"rtl\"><p></p></section>'"
+   ]
+  ],
+  "tests": "testEveryPageIsBilingual"
+ },
+ {
+  "id": "M71",
+  "rule": "R-U deleting an account removes its link and codes",
+  "file": "lib/Listener/UserDeletedListener.php",
+  "edits": [
+   [
+    "$this->links->deleteForUid($uid);",
+    "\\n"
+   ]
+  ],
+  "tests": "testDeletingAnAccountRemovesItsLinkAndCodes|testReusedAccountIdDoesNotInheritTheOldLink"
+ },
+ {
+  "id": "M72",
+  "rule": "R-V the log carries no account id, only a reference",
+  "file": "lib/Service/SsoLog.php",
+  "edits": [
+   [
+    "$line .= ' uid_ref=' . self::ref($uid);",
+    "$line .= ' uid_ref=' . $uid;"
+   ]
+  ],
+  "tests": "testWissoMessagesHaveTheFixedShapeAndNoValues",
+  "also": "testNewWiUserGetsAnAccountFromTheWiEmail"
+ },
+ {
+  "id": "M73",
+  "rule": "R-V the log never carries the key",
+  "file": "lib/Controller/ApiController.php",
+  "edits": [
+   [
+    "$this->log->event('login_denied', $reason);\\n\\t\\t\\treturn;",
+    "$this->log->event('login_denied', $reason, null, ['k' => (string)KeyChecker::bearer($this->request->getHeader('Authorization'))]);\\n\\t\\t\\treturn;"
+   ],
+   [
+    "if ($n <= self::BAD_KEY_LOG_PER_MINUTE) {\\n\\t\\t\\t$this->log->event('login_denied', $reason);",
+    "if ($n <= self::BAD_KEY_LOG_PER_MINUTE) {\\n\\t\\t\\t$this->log->event('login_denied', $reason, null, ['k' => (string)KeyChecker::bearer($this->request->getHeader('Authorization'))]);"
+   ]
+  ],
+  "tests": "testNoSecretAppearsInAnyWissoLineExceptCodesInTheUrlContext",
+  "also": "testBadKeyLogLinesAreCapped|testNewWiUserGetsAnAccountFromTheWiEmail"
+ },
+ {
+  "id": "M74",
+  "rule": "R-V bad-key log lines are capped per minute",
+  "file": "lib/Controller/ApiController.php",
+  "edits": [
+   [
+    "if ($n <= self::BAD_KEY_LOG_PER_MINUTE) {",
+    "if (true) {"
+   ]
+  ],
+  "tests": "testBadKeyLogLinesAreCapped"
+ },
+ {
+  "id": "M75",
+  "rule": "R-W occ wisso:status never prints the key hash",
+  "file": "lib/Command/Status.php",
+  "edits": [
+   [
+    "$output->writeln('key configured: ' . ($this->key->isConfigured() ? 'yes' : 'no'));",
+    "$output->writeln('key configured: ' . ($this->key->isConfigured() ? 'yes ' . $this->appConfig->getValueString('wisso', 'key_sha256', '') : 'no'));"
+   ]
+  ],
+  "tests": "testStatusIsReadOnlyAndNeverPrintsTheKeyOrItsHash"
+ },
+ {
+  "id": "M76",
+  "rule": "R-W key:generate refuses to replace a key without --rotate",
+  "file": "lib/Command/KeyGenerate.php",
+  "edits": [
+   [
+    "if ($this->key->isConfigured() && !$input->getOption('rotate')) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testKeyGenerateRefusesToReplaceWithoutRotate"
+ },
+ {
+  "id": "M77",
+  "rule": "R-W key:generate stores only the hash of the printed key",
+  "file": "lib/Command/KeyGenerate.php",
+  "edits": [
+   [
+    "$this->key->setHash($hash);",
+    "$this->key->setHash(hash('sha256', $hash));"
+   ]
+  ],
+  "tests": "testKeyGenerateAndRotateStoreOnlyTheHashAndTheOldKeyDies"
+ },
+ {
+  "id": "M78",
+  "rule": "R-W unlink removes the link but keeps the account",
+  "file": "lib/Command/Unlink.php",
+  "edits": [
+   [
+    "$removed = $this->links->deleteForUid($uid);",
+    "$removed = 1;"
+   ]
+  ],
+  "tests": "testUnlinkRemovesTheLinkKeepsTheAccountAndTheNextClickIsAClaim"
+ }
 ]

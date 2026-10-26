@@ -1,0 +1,7 @@
+{
+ "M18": "explicit admin check removed: ISubAdmin::isSubAdmin() is true for admins, so the sub-admin refusal still fires (defence in depth, no behaviour change)",
+ "M51": "deleted-account guard at consume removed: UserDeletedListener deletes the user's codes first, so no code outlives the account",
+ "M57": "control-character class removed from the redirect validator: the path pattern's segment charset [A-Za-z0-9_-] already rejects them",
+ "M58": "explicit no-store header removed from a redirect: core already sends Cache-Control no-cache, no-store, must-revalidate (checked with curl)",
+ "M69": "explicit no-store header removed from a page: core already sends Cache-Control no-cache, no-store, must-revalidate (checked with curl)"
+}
