@@ -108,6 +108,31 @@ class ClaimTest extends WissoTestCase {
 		$this->webLogin('t_claim');
 	}
 
+	/** D-NC-003: no purge of other app passwords at claim (BitBox did purge; here it would sign out sync clients). */
+	public function testClaimAndLaterSignInsLeaveExistingAppPasswordsAlone(): void {
+		$this->holder('t_claim_tok');
+		$provider = \OC::$server->get(\OC\Authentication\Token\IProvider::class);
+		$name = 'wisso-test-sync-client';
+		$provider->generateToken(bin2hex(random_bytes(20)), 't_claim_tok', 't_claim_tok', null, $name, \OCP\Authentication\Token\IToken::PERMANENT_TOKEN);
+		$permanent = function () {
+			$qb = $this->db->getQueryBuilder();
+			return (int)$qb->select($qb->func()->count('*'))->from('authtoken')
+				->where($qb->expr()->eq('uid', $qb->createNamedParameter('t_claim_tok')))
+				->andWhere($qb->expr()->eq('type', $qb->createNamedParameter(\OCP\Authentication\Token\IToken::PERMANENT_TOKEN)))
+				->executeQuery()->fetchOne();
+		};
+		$this->assertSame(1, $permanent(), 'fixture: the app password exists');
+
+		$client = $this->webLogin('t_claim_tok');
+		[, $f] = $this->view($client);
+		$this->post($client, $f);
+		$this->assertSame('t_claim_tok', $this->linkedUid($this->email));
+		$this->assertSame(1, $permanent(), 'the claim left the app password in place');
+
+		$this->client(new CookieJar())->get($this->loginFor($this->email));
+		$this->assertSame(1, $permanent(), 'a later wi sign-in left it in place too');
+	}
+
 	private function assertNothingChangedAfterReplay(\Psr\Http\Message\ResponseInterface $again): void {
 		$this->assertSame(400, $again->getStatusCode(), 'the used code is just an expired link');
 		$this->assertSame(1, $this->countRows('wisso_links'));

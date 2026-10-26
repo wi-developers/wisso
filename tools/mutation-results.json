@@ -800,5 +800,15 @@
   "failed": [
    "CommandsTest::testUnlinkRemovesTheLinkKeepsTheAccountAndTheNextClickIsAClaim"
   ]
+ },
+ "M79": {
+  "id": "M79",
+  "rule": "R-D3 no purge of other app passwords at claim (D-NC-003)",
+  "file": "lib/Controller/SsoController.php",
+  "tests": "testClaimAndLaterSignInsLeaveExistingAppPasswordsAlone",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testClaimAndLaterSignInsLeaveExistingAppPasswordsAlone"
+  ]
  }
 }

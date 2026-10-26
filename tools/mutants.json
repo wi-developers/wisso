@@ -954,5 +954,17 @@
    ]
   ],
   "tests": "testUnlinkRemovesTheLinkKeepsTheAccountAndTheNextClickIsAClaim"
+ },
+ {
+  "id": "M79",
+  "rule": "R-D3 no purge of other app passwords at claim (D-NC-003)",
+  "file": "lib/Controller/SsoController.php",
+  "edits": [
+   [
+    "\t\t\t$this->db->commit();\n\t\t\treturn true;",
+    "\t\t\t$this->db->commit();\n\t\t\tforeach (\\OC::$server->get(\\OC\\Authentication\\Token\\IProvider::class)->getTokenByUser($current->getUID()) as $t) { if ($t->getType() === IToken::PERMANENT_TOKEN) { \\OC::$server->get(\\OC\\Authentication\\Token\\IProvider::class)->invalidateTokenById($current->getUID(), $t->getId()); } }\n\t\t\treturn true;"
+   ]
+  ],
+  "tests": "testClaimAndLaterSignInsLeaveExistingAppPasswordsAlone"
  }
 ]
