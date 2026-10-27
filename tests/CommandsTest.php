@@ -28,6 +28,17 @@ class CommandsTest extends WissoTestCase {
 		$this->assertSame($before, [$this->countRows('wisso_links'), $this->countRows('wisso_codes')]);
 	}
 
+	/** The gate finding: a typed boolean flag made wisso:status exit 1 with a type conflict. */
+	public function testStatusReadsTypedBooleanRegistrationFlags(): void {
+		[$code, $out] = $this->occ('wisso:status');
+		$this->assertSame(0, $code, $out);
+		$this->assertStringContainsString('registration admin_approval_required: no', $out);
+		$this->withTypedAppConfig('registration', 'admin_approval_required', true);
+		[$code, $out] = $this->occ('wisso:status');
+		$this->assertSame(0, $code, $out);
+		$this->assertStringContainsString('registration admin_approval_required: yes', $out);
+	}
+
 	public function testStatusLinksListsAccountsWithTheLogReference(): void {
 		$email = $this->randomEmail();
 		$this->loginFor($email);

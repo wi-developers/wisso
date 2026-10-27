@@ -46,6 +46,15 @@ class ConsumeTest extends WissoTestCase {
 		}
 	}
 
+	/** Gate finding: the code read the key default_app; core's key is defaultapp, so the owner's choice was ignored. */
+	public function testNoRequestedPathGoesToTheInstanceDefaultApp(): void {
+		$this->config->setSystemValue('defaultapp', 'files');
+		$this->onTearDown(fn () => $this->config->deleteSystemValue('defaultapp'));
+		$url = $this->loginFor($this->randomEmail(), 'P', 'not-a-path');
+		$r = $this->client(new CookieJar())->get($url);
+		$this->assertSame(self::BASE . '/index.php/apps/files/', $r->getHeaderLine('Location'));
+	}
+
 	public function testRequestedPathUnderAppsIsHonoured(): void {
 		$url = $this->loginFor($this->randomEmail(), 'P', '/apps/files/');
 		$r = $this->client(new CookieJar())->get($url);

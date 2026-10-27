@@ -966,5 +966,53 @@
    ]
   ],
   "tests": "testClaimAndLaterSignInsLeaveExistingAppPasswordsAlone"
+ },
+ {
+  "id": "M80",
+  "rule": "R-G registration flags read as typed booleans (gate MUST-FIX 1)",
+  "file": "lib/Service/RegistrationSettings.php",
+  "edits": [
+   [
+    "if ($this->appConfig->getValueType(self::APP, $key) === IAppConfig::VALUE_BOOL) {",
+    "if (false) {"
+   ]
+  ],
+  "tests": "testTypedFalseFlagsAreTheDefaultShapeAndNewAccountsStillWork|testStatusReadsTypedBooleanRegistrationFlags"
+ },
+ {
+  "id": "M81",
+  "rule": "R-G registration flags stored as plain strings still honoured",
+  "file": "lib/Service/RegistrationSettings.php",
+  "edits": [
+   [
+    "return in_array(strtolower($this->appConfig->getValueString(self::APP, $key, '')), ['1', 'yes', 'true', 'on'], true);",
+    "return false;"
+   ]
+  ],
+  "tests": "testFlagsStoredAsPlainStringsAreHonouredToo"
+ },
+ {
+  "id": "M82",
+  "rule": "R-H instance default app is read from the core key defaultapp",
+  "file": "lib/Service/RedirectValidator.php",
+  "edits": [
+   [
+    "getSystemValueString('defaultapp', 'dashboard,files')",
+    "getSystemValueString('default_app', 'dashboard,files')"
+   ]
+  ],
+  "tests": "testNoRequestedPathGoesToTheInstanceDefaultApp"
+ },
+ {
+  "id": "M83",
+  "rule": "R-C claim code lives 300 s",
+  "file": "lib/Service/CodeStore.php",
+  "edits": [
+   [
+    "self::TYPE_CLAIM => 300]",
+    "self::TYPE_CLAIM => 30000]"
+   ]
+  ],
+  "tests": "testClaimCodeLivesThreeHundredSeconds"
  }
 ]

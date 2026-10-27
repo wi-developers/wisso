@@ -183,8 +183,9 @@ class LoginCreateTest extends WissoTestCase {
 	}
 
 	public function testBlocklistModeIsHonoured(): void {
+		// the registration admin page stores its flags as typed booleans: that is the live shape
 		$this->withAppConfig('registration', 'allowed_domains', 'blocked.example');
-		$this->withAppConfig('registration', 'domains_is_blocklist', 'yes');
+		$this->withTypedAppConfig('registration', 'domains_is_blocklist', true);
 		$bad = 'x' . bin2hex(random_bytes(3)) . '@blocked.example';
 		self::$secrets[] = $bad;
 		$this->assertErrorShape($this->apiPost('login', ['email' => $bad]), 403);
@@ -192,16 +193,44 @@ class LoginCreateTest extends WissoTestCase {
 	}
 
 	public function testAdminApprovalRequiredRefusesNewAccounts(): void {
+		$this->withTypedAppConfig('registration', 'admin_approval_required', true);
+		$email = $this->randomEmail();
+		$this->assertErrorShape($this->apiPost('login', ['email' => $email]), 403);
+		$this->assertNull($this->linkedUid($email));
+	}
+
+	/** occ and older versions of the registration app store the same flags as plain strings. */
+	public function testFlagsStoredAsPlainStringsAreHonouredToo(): void {
+		foreach (['domains_is_blocklist', 'admin_approval_required'] as $key) {
+			$this->appConfig->deleteKey('registration', $key);
+		}
+		$this->withAppConfig('registration', 'allowed_domains', 'blocked.example');
+		$this->withAppConfig('registration', 'domains_is_blocklist', 'yes');
+		$bad = 'y' . bin2hex(random_bytes(3)) . '@blocked.example';
+		self::$secrets[] = $bad;
+		$this->assertErrorShape($this->apiPost('login', ['email' => $bad]), 403);
+		$this->assertSame(200, $this->apiPost('login', ['email' => $this->randomEmail()])->getStatusCode());
 		$this->withAppConfig('registration', 'admin_approval_required', 'yes');
 		$email = $this->randomEmail();
 		$this->assertErrorShape($this->apiPost('login', ['email' => $email]), 403);
 		$this->assertNull($this->linkedUid($email));
 	}
 
+	/** The gate finding: a typed false (what the admin page writes once saved) made every new-account login a 500. */
+	public function testTypedFalseFlagsAreTheDefaultShapeAndNewAccountsStillWork(): void {
+		foreach (['domains_is_blocklist', 'admin_approval_required'] as $key) {
+			$this->assertSame(\OCP\IAppConfig::VALUE_BOOL, $this->appConfig->getValueType('registration', $key), "$key is not pinned as a typed boolean");
+			$this->assertFalse($this->appConfig->getValueBool('registration', $key));
+		}
+		$email = $this->randomEmail();
+		$this->assertSame(200, $this->apiPost('login', ['email' => $email])->getStatusCode());
+		$this->assertNotNull($this->linkedUid($email));
+	}
+
 	public function testRegistrationRulesDoNotBlockAnAlreadyLinkedUser(): void {
 		$email = $this->randomEmail();
 		$this->loginFor($email);
-		$this->withAppConfig('registration', 'admin_approval_required', 'yes');
+		$this->withTypedAppConfig('registration', 'admin_approval_required', true);
 		$this->assertSame(200, $this->apiPost('login', ['email' => $email])->getStatusCode());
 	}
 

@@ -8,8 +8,9 @@
 # Exit 0 = all checks passed, 1 = a check failed (read the line that says FAIL), 2 = could not run.
 # What each check proves:
 #   1. a wrong bearer key answers HTTP 401 with the JSON body {"errors":[{"title":"Unauthorized."}]}: the app is enabled, its
-#      route answers, the Authorization header reaches PHP, and a wrong key is refused. A broken or disabled app answers
-#      404 or an HTML page instead.
+#      route answers, and a wrong or missing key is refused. A broken or disabled app answers 404 or an HTML page instead.
+#      It does NOT prove that the Authorization header reaches PHP: a stripped header gives the same 401. Only the log line
+#      "reason=bad_key" (owner runbook section F) shows that the header arrived.
 #   2. GET on the login call answers 405 JSON: wi's error shape holds for a non-POST request.
 #   3. an unknown path under admin-api answers 404 JSON.
 #   4. the consume page with a junk code redirects to the login page (302 or 303) and shows no reason.

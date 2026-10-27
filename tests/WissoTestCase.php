@@ -52,6 +52,11 @@ abstract class WissoTestCase extends TestCase {
 		$this->db = Server::get(IDBConnection::class);
 		$this->assertProductionShape();
 		$this->resetState();
+		// the registration admin page stores its two flags as typed booleans (gate finding, D-BDR-091): every test starts on that shape
+		foreach (['domains_is_blocklist', 'admin_approval_required'] as $flag) {
+			$this->appConfig->deleteKey('registration', $flag);
+			$this->appConfig->setValueBool('registration', $flag, false);
+		}
 		if (self::$suiteKey === null) {
 			// a fresh log for this run, so the hygiene test judges only what this run wrote
 			$log = (string)$this->config->getSystemValue('datadirectory') . '/nextcloud.log';
@@ -99,6 +104,9 @@ abstract class WissoTestCase extends TestCase {
 		$this->made = [];
 		$this->madeGroups = [];
 		$this->resetState();
+		foreach (['domains_is_blocklist', 'admin_approval_required'] as $flag) {
+			$this->appConfig->deleteKey('registration', $flag);
+		}
 	}
 
 	/** The tests must run under production settings, not defaults (BitBox hotfix-52: a harness pin hid a crash). */

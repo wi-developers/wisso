@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OCA\Wisso\Service;
 
 use OCP\Accounts\IAccountManager;
-use OCP\IAppConfig;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\Security\ISecureRandom;
@@ -18,7 +17,7 @@ use OCP\Security\ISecureRandom;
 class AccountService {
 	public function __construct(
 		private IUserManager $users,
-		private IAppConfig $appConfig,
+		private RegistrationSettings $registration,
 		private IAccountManager $accounts,
 		private ISecureRandom $random,
 		private LinkStore $links,
@@ -135,7 +134,7 @@ class AccountService {
 
 	/** Nextcloud's own sign-up rules for a NEW account: the registration app's domain list and admin approval. */
 	private function assertRegistrationRules(string $email): void {
-		$domains = array_filter(array_map('trim', explode(';', strtolower($this->appConfig->getValueString('registration', 'allowed_domains', '')))));
+		$domains = array_filter(array_map('trim', explode(';', strtolower($this->registration->allowedDomains()))));
 		if ($domains !== []) {
 			$mailDomain = explode('@', $email, 2)[1] ?? '';
 			$listed = false;
@@ -147,18 +146,14 @@ class AccountService {
 					$listed = $listed || $mailDomain === $domain;
 				}
 			}
-			$blocklist = $this->truthy($this->appConfig->getValueString('registration', 'domains_is_blocklist', ''));
+			$blocklist = $this->registration->flag('domains_is_blocklist');
 			if ($blocklist === $listed) {
 				throw new SsoRefusal('domain_refused');
 			}
 		}
-		if ($this->truthy($this->appConfig->getValueString('registration', 'admin_approval_required', ''))) {
+		if ($this->registration->flag('admin_approval_required')) {
 			throw new SsoRefusal('reg_approval');
 		}
-	}
-
-	private function truthy(string $value): bool {
-		return in_array(strtolower($value), ['1', 'yes', 'true', 'on'], true);
 	}
 
 	private function createUser(string $email, string $name): IUser {

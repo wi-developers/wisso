@@ -37,6 +37,17 @@ class ClaimTest extends WissoTestCase {
 		$this->assertSame(0, $this->countRows('wisso_links'), 'nothing linked');
 	}
 
+	/** Gate finding: only the 60 s login lifetime was asserted; a claim code lives 300 s, not longer. */
+	public function testClaimCodeLivesThreeHundredSeconds(): void {
+		$this->holder('t_claim_ttl');
+		$qb = $this->db->getQueryBuilder();
+		$qb->select('type', 'expires_at')->from('wisso_codes');
+		$rows = $qb->executeQuery()->fetchAll();
+		$this->assertCount(1, $rows);
+		$this->assertSame('claim', $rows[0]['type']);
+		$this->assertEqualsWithDelta(time() + 300, (int)$rows[0]['expires_at'], 3);
+	}
+
 	public function testNobodySignedInGetsTheSignInPageAndNoSession(): void {
 		$this->holder();
 		$client = $this->client(new CookieJar());

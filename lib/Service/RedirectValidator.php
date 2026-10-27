@@ -18,7 +18,7 @@ class RedirectValidator {
 	}
 
 	public function defaultPath(): string {
-		$first = explode(',', $this->config->getSystemValueString('default_app', 'dashboard,files'))[0];
+		$first = explode(',', $this->config->getSystemValueString('defaultapp', 'dashboard,files'))[0];
 		$first = trim($first);
 		if (preg_match('/^[a-z0-9_]+$/D', $first) !== 1) {
 			$first = 'dashboard';

@@ -7,6 +7,7 @@ namespace OCA\Wisso\Command;
 use OCA\Wisso\Service\CodeStore;
 use OCA\Wisso\Service\KeyChecker;
 use OCA\Wisso\Service\LinkStore;
+use OCA\Wisso\Service\RegistrationSettings;
 use OCA\Wisso\Service\SsoLog;
 use OCP\IAppConfig;
 use OCP\IConfig;
@@ -21,6 +22,7 @@ class Status extends Command {
 		private KeyChecker $key,
 		private LinkStore $links,
 		private CodeStore $codes,
+		private RegistrationSettings $registration,
 		private IAppConfig $appConfig,
 		private IConfig $config,
 	) {
@@ -38,8 +40,8 @@ class Status extends Command {
 		$output->writeln('linked accounts: ' . $this->links->count());
 		$output->writeln('live one-time codes: ' . $this->codes->count());
 		$output->writeln('overwrite.cli.url set: ' . ($this->config->getSystemValueString('overwrite.cli.url', '') !== '' ? 'yes' : 'no'));
-		$output->writeln('registration admin_approval_required: ' . ($this->flag('admin_approval_required') ? 'yes' : 'no'));
-		$output->writeln('registration allowed_domains set: ' . ($this->appConfig->getValueString('registration', 'allowed_domains', '') !== '' ? 'yes' : 'no'));
+		$output->writeln('registration admin_approval_required: ' . ($this->registration->flag('admin_approval_required') ? 'yes' : 'no'));
+		$output->writeln('registration allowed_domains set: ' . ($this->registration->allowedDomains() !== '' ? 'yes' : 'no'));
 		$output->writeln('users may edit their own profile e-mail: ' . ($this->config->getSystemValueBool('allow_user_to_change_email', $this->config->getSystemValueBool('allow_user_to_change_display_name', true)) ? 'yes (squat lever open)' : 'no'));
 		$output->writeln('instance default quota for new users: ' . $this->appConfig->getValueString('files', 'default_quota', 'none'));
 		if ($input->getOption('links')) {
@@ -50,7 +52,4 @@ class Status extends Command {
 		return 0;
 	}
 
-	private function flag(string $key): bool {
-		return in_array(strtolower($this->appConfig->getValueString('registration', $key, '')), ['1', 'yes', 'true', 'on'], true);
-	}
 }

@@ -80,7 +80,7 @@ class ApiController extends Controller {
 		} catch (SsoRefusal $r) {
 			return $this->refuse($r, 'login_denied');
 		} catch (\Throwable $e) {
-			return $this->failed($e);
+			return $this->failed($e, 'login_denied');
 		}
 	}
 
@@ -104,7 +104,7 @@ class ApiController extends Controller {
 		} catch (SsoRefusal $r) {
 			return $this->refuse($r, 'update_denied');
 		} catch (\Throwable $e) {
-			return $this->failed($e);
+			return $this->failed($e, 'update_denied');
 		}
 	}
 
@@ -191,8 +191,8 @@ class ApiController extends Controller {
 	}
 
 	/** Only the exception class is logged: database exception messages can contain e-mail addresses. */
-	private function failed(\Throwable $e): JSONResponse {
-		$this->log->event('login_denied', 'exception', null, ['class' => str_replace('\\', '.', $e::class)]);
+	private function failed(\Throwable $e, string $event): JSONResponse {
+		$this->log->event($event, 'exception', null, ['class' => str_replace('\\', '.', $e::class)]);
 		return $this->json($this->errorBody(500), 500);
 	}
 

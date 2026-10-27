@@ -810,5 +810,46 @@
   "failed": [
    "ClaimTest::testClaimAndLaterSignInsLeaveExistingAppPasswordsAlone"
   ]
+ },
+ "M80": {
+  "id": "M80",
+  "rule": "R-G registration flags read as typed booleans (gate MUST-FIX 1)",
+  "file": "lib/Service/RegistrationSettings.php",
+  "tests": "testTypedFalseFlagsAreTheDefaultShapeAndNewAccountsStillWork|testStatusReadsTypedBooleanRegistrationFlags",
+  "status": "CAUGHT",
+  "failed": [
+   "CommandsTest::testStatusReadsTypedBooleanRegistrationFlags",
+   "LoginCreateTest::testTypedFalseFlagsAreTheDefaultShapeAndNewAccountsStillWork"
+  ]
+ },
+ "M81": {
+  "id": "M81",
+  "rule": "R-G registration flags stored as plain strings still honoured",
+  "file": "lib/Service/RegistrationSettings.php",
+  "tests": "testFlagsStoredAsPlainStringsAreHonouredToo",
+  "status": "CAUGHT",
+  "failed": [
+   "LoginCreateTest::testFlagsStoredAsPlainStringsAreHonouredToo"
+  ]
+ },
+ "M82": {
+  "id": "M82",
+  "rule": "R-H instance default app is read from the core key defaultapp",
+  "file": "lib/Service/RedirectValidator.php",
+  "tests": "testNoRequestedPathGoesToTheInstanceDefaultApp",
+  "status": "CAUGHT",
+  "failed": [
+   "ConsumeTest::testNoRequestedPathGoesToTheInstanceDefaultApp"
+  ]
+ },
+ "M83": {
+  "id": "M83",
+  "rule": "R-C claim code lives 300 s",
+  "file": "lib/Service/CodeStore.php",
+  "tests": "testClaimCodeLivesThreeHundredSeconds",
+  "status": "CAUGHT",
+  "failed": [
+   "ClaimTest::testClaimCodeLivesThreeHundredSeconds"
+  ]
  }
 }
