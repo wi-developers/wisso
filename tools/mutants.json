@@ -1014,5 +1014,209 @@
    ]
   ],
   "tests": "testClaimCodeLivesThreeHundredSeconds"
+ },
+ {
+  "id": "M84",
+  "rule": "R-L logo path must not be protocol-relative",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'#^/(?!/)[A-Za-z0-9._~%/-]*(\\?[A-Za-z0-9._~%=&/-]*)?$#D'",
+    "'#^/[A-Za-z0-9._~%/-]*(\\?[A-Za-z0-9._~%=&/-]*)?$#D'"
+   ]
+  ],
+  "tests": "testHostileLogoIsNeverUsed"
+ },
+ {
+  "id": "M85",
+  "rule": "R-L logo path regex is end-anchored with D",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "(\\?[A-Za-z0-9._~%=&/-]*)?$#D'",
+    "(\\?[A-Za-z0-9._~%=&/-]*)?$#'"
+   ]
+  ],
+  "tests": "testHostileLogoIsNeverUsed"
+ },
+ {
+  "id": "M86",
+  "rule": "R-L colour regex is end-anchored with D",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "public const HEX_COLOR = '/^#[0-9a-fA-F]{6}$/D';",
+    "public const HEX_COLOR = '/^#[0-9a-fA-F]{6}$/';"
+   ]
+  ],
+  "tests": "testHostileColourFallsBack"
+ },
+ {
+  "id": "M87",
+  "rule": "R-L a theme name longer than 60 characters is refused",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "mb_strlen($name, 'UTF-8') <= 60",
+    "mb_strlen($name, 'UTF-8') <= 61"
+   ]
+  ],
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack"
+ },
+ {
+  "id": "M88",
+  "rule": "R-L theme name escaped in the title",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<title>' . $this->e($brand['name']) . '</title><style>'",
+    "'<title>' . $brand['name'] . '</title><style>'"
+   ]
+  ],
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack"
+ },
+ {
+  "id": "M89",
+  "rule": "R-L theme name escaped in the logo alt",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'\" alt=\"' . $this->e($brand['name']) . '\"></div>'",
+    "'\" alt=\"' . $brand['name'] . '\"></div>'"
+   ]
+  ],
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack"
+ },
+ {
+  "id": "M90",
+  "rule": "R-L theme name escaped in the wordmark",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<div class=\"brandbar\"><p class=\"wordmark\">' . $this->e($brand['name']) . '</p></div>'",
+    "'<div class=\"brandbar\"><p class=\"wordmark\">' . $brand['name'] . '</p></div>'"
+   ]
+  ],
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack"
+ },
+ {
+  "id": "M91",
+  "rule": "R-L every theming read is inside try/catch Throwable (bitbox hotfix-54 finding)",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "} catch (\\Throwable) {",
+    "} catch (\\LogicException) {"
+   ]
+  ],
+  "tests": "testAThemingFailureStillRendersEveryPage"
+ },
+ {
+  "id": "M92",
+  "rule": "R-L images are allowed only when a logo is shown",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "if ($brand['logo'] !== null) {",
+    "if (true) {"
+   ]
+  ],
+  "tests": "testNoLogoShowsTheNameAsAWordmarkAndAllowsNoImages"
+ },
+ {
+  "id": "M93",
+  "rule": "R-L the only allowed image origin is self",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "addAllowedImageDomain(\"'self'\")",
+    "addAllowedImageDomain('*')"
+   ]
+  ],
+  "tests": "testThemeValuesReachThePage"
+ },
+ {
+  "id": "M94",
+  "rule": "R-L a logo path longer than 300 characters is refused",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "strlen($logo) <= 300",
+    "strlen($logo) <= 3000"
+   ]
+  ],
+  "tests": "testHostileLogoIsNeverUsed"
+ },
+ {
+  "id": "M95",
+  "rule": "R-L the text colour comes from the theme text colour, not the primary",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'onPrimary' => preg_match(self::HEX_COLOR, $onPrimary) === 1 ? $onPrimary : self::FALLBACK_ON_PRIMARY,",
+    "'onPrimary' => preg_match(self::HEX_COLOR, $primary) === 1 ? $primary : self::FALLBACK_ON_PRIMARY,"
+   ]
+  ],
+  "tests": "testThemeValuesReachThePage"
+ },
+ {
+  "id": "M96",
+  "rule": "R-L the primary colour is validated before it reaches CSS",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'primary' => preg_match(self::HEX_COLOR, $primary) === 1 ? $primary : self::FALLBACK_PRIMARY,",
+    "'primary' => $primary,"
+   ]
+  ],
+  "tests": "testHostileColourFallsBack"
+ },
+ {
+  "id": "M97",
+  "rule": "R-L the e-mail on the confirm page is escaped",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<bdi dir=\"ltr\">' . $this->e($email) . '</bdi></span></p>'",
+    "'<bdi dir=\"ltr\">' . $email . '</bdi></span></p>'"
+   ]
+  ],
+  "tests": "testLinksAndFormValuesAreEscaped"
+ },
+ {
+  "id": "M98",
+  "rule": "R-L the display name on the confirm page is escaped",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<strong>' . $this->e($displayName) . '</strong>'",
+    "'<strong>' . $displayName . '</strong>'"
+   ]
+  ],
+  "tests": "testLinksAndFormValuesAreEscaped"
+ },
+ {
+  "id": "M99",
+  "rule": "R-L the one-time code in the confirm form is escaped",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<input type=\"hidden\" name=\"code\" value=\"' . $this->e($code) . '\">'",
+    "'<input type=\"hidden\" name=\"code\" value=\"' . $code . '\">'"
+   ]
+  ],
+  "tests": "testLinksAndFormValuesAreEscaped"
+ },
+ {
+  "id": "M100",
+  "rule": "R-L the sign-in link is escaped",
+  "file": "lib/Service/Pages.php",
+  "edits": [
+   [
+    "'<p class=\"act\"><a class=\"btn\" href=\"' . $this->e($loginUrl) . '\">",
+    "'<p class=\"act\"><a class=\"btn\" href=\"' . $loginUrl . '\">"
+   ]
+  ],
+  "tests": "testLinksAndFormValuesAreEscaped"
  }
 ]

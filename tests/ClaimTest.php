@@ -90,7 +90,13 @@ class ClaimTest extends WissoTestCase {
 		$this->assertStringContainsString("form-action 'self'", $csp);
 		$this->assertStringNotContainsString('script-src', $csp);
 		$this->assertStringContainsString('no-store', $r->getHeaderLine('Cache-Control'));
-		$this->assertDoesNotMatchRegularExpression('/<script|src=|<link/i', $body, 'no script and no subresources');
+		// D-NC-008: the only subresource is the host's own logo, a same-origin path
+		$this->assertDoesNotMatchRegularExpression('/<script|<link|\bsrc=["\'](?!\/(?!\/))/i', $body, 'no script, no stylesheet, no off-origin subresource');
+		$this->assertMatchesRegularExpression('#<img class="logo" src="/[^"]+" alt="[^"]+">#', $body, 'branded: the host logo');
+		$this->assertStringContainsString("img-src 'self'", $csp);
+		$this->assertMatchesRegularExpression('/--primary:#[0-9a-f]{6};--on-primary:#[0-9a-f]{6}/', $body, 'branded: the host colours');
+		$this->assertStringContainsString('class="avatar"', $body);
+		$this->assertStringContainsString('<button type="submit">', $body);
 		$this->assertNothingLinked();
 	}
 

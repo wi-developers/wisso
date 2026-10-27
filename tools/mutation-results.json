@@ -851,5 +851,182 @@
   "failed": [
    "ClaimTest::testClaimCodeLivesThreeHundredSeconds"
   ]
+ },
+ "M84": {
+  "id": "M84",
+  "rule": "R-L logo path must not be protocol-relative",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileLogoIsNeverUsed",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileLogoIsNeverUsed"
+  ]
+ },
+ "M85": {
+  "id": "M85",
+  "rule": "R-L logo path regex is end-anchored with D",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileLogoIsNeverUsed",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileLogoIsNeverUsed"
+  ]
+ },
+ "M86": {
+  "id": "M86",
+  "rule": "R-L colour regex is end-anchored with D",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileColourFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileColourFallsBack"
+  ]
+ },
+ "M87": {
+  "id": "M87",
+  "rule": "R-L a theme name longer than 60 characters is refused",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileNameIsEscapedAndALongNameFallsBack"
+  ]
+ },
+ "M88": {
+  "id": "M88",
+  "rule": "R-L theme name escaped in the title",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileNameIsEscapedAndALongNameFallsBack"
+  ]
+ },
+ "M89": {
+  "id": "M89",
+  "rule": "R-L theme name escaped in the logo alt",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileNameIsEscapedAndALongNameFallsBack"
+  ]
+ },
+ "M90": {
+  "id": "M90",
+  "rule": "R-L theme name escaped in the wordmark",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileNameIsEscapedAndALongNameFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileNameIsEscapedAndALongNameFallsBack"
+  ]
+ },
+ "M91": {
+  "id": "M91",
+  "rule": "R-L every theming read is inside try/catch Throwable (bitbox hotfix-54 finding)",
+  "file": "lib/Service/Pages.php",
+  "tests": "testAThemingFailureStillRendersEveryPage",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testAThemingFailureStillRendersEveryPage"
+  ]
+ },
+ "M92": {
+  "id": "M92",
+  "rule": "R-L images are allowed only when a logo is shown",
+  "file": "lib/Service/Pages.php",
+  "tests": "testNoLogoShowsTheNameAsAWordmarkAndAllowsNoImages",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testNoLogoShowsTheNameAsAWordmarkAndAllowsNoImages"
+  ]
+ },
+ "M93": {
+  "id": "M93",
+  "rule": "R-L the only allowed image origin is self",
+  "file": "lib/Service/Pages.php",
+  "tests": "testThemeValuesReachThePage",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testThemeValuesReachThePage"
+  ]
+ },
+ "M94": {
+  "id": "M94",
+  "rule": "R-L a logo path longer than 300 characters is refused",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileLogoIsNeverUsed",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileLogoIsNeverUsed"
+  ]
+ },
+ "M95": {
+  "id": "M95",
+  "rule": "R-L the text colour comes from the theme text colour, not the primary",
+  "file": "lib/Service/Pages.php",
+  "tests": "testThemeValuesReachThePage",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testThemeValuesReachThePage"
+  ]
+ },
+ "M96": {
+  "id": "M96",
+  "rule": "R-L the primary colour is validated before it reaches CSS",
+  "file": "lib/Service/Pages.php",
+  "tests": "testHostileColourFallsBack",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack",
+   "PagesTest::testHostileColourFallsBack"
+  ]
+ },
+ "M97": {
+  "id": "M97",
+  "rule": "R-L the e-mail on the confirm page is escaped",
+  "file": "lib/Service/Pages.php",
+  "tests": "testLinksAndFormValuesAreEscaped",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testLinksAndFormValuesAreEscaped"
+  ]
+ },
+ "M98": {
+  "id": "M98",
+  "rule": "R-L the display name on the confirm page is escaped",
+  "file": "lib/Service/Pages.php",
+  "tests": "testLinksAndFormValuesAreEscaped",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testLinksAndFormValuesAreEscaped"
+  ]
+ },
+ "M99": {
+  "id": "M99",
+  "rule": "R-L the one-time code in the confirm form is escaped",
+  "file": "lib/Service/Pages.php",
+  "tests": "testLinksAndFormValuesAreEscaped",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testLinksAndFormValuesAreEscaped"
+  ]
+ },
+ "M100": {
+  "id": "M100",
+  "rule": "R-L the sign-in link is escaped",
+  "file": "lib/Service/Pages.php",
+  "tests": "testLinksAndFormValuesAreEscaped",
+  "status": "CAUGHT",
+  "failed": [
+   "PagesTest::testLinksAndFormValuesAreEscaped"
+  ]
  }
 }
