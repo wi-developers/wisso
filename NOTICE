@@ -1,0 +1,17 @@
+wisso - WI single sign-on app for Nextcloud
+Copyright (C) 2026 WI
+
+This program is free software: you can redistribute it and/or modify it under the terms of the
+GNU Affero General Public License as published by the Free Software Foundation, version 3 of the
+License, or (at your option) any later version. It is distributed WITHOUT ANY WARRANTY, without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The full licence
+text is in the file COPYING.
+
+This app is built for, and uses interfaces of, Nextcloud (Copyright ownCloud, Inc. and Nextcloud
+contributors, AGPL-3.0).
+
+Trademarks
+----------
+Nextcloud is a trademark of Nextcloud GmbH. This project is an independent work of WI. It is not
+affiliated with, sponsored or endorsed by Nextcloud GmbH. Nextcloud's own licence and trademark
+information: https://nextcloud.com/trademarks/
